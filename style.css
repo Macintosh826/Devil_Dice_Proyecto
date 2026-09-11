@@ -1,0 +1,183 @@
+:root {
+    --bg-color: #12131C;
+    --panel-bg: #1E202D;
+    --accent-gold: #FFC700;
+    --accent-red: #FF3366;
+    --accent-green: #00E676;
+    --text-color: #FFFFFF;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Share Tech Mono', monospace;
+    margin: 0;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-family: 'Press Start 2P', cursive;
+    color: var(--accent-gold);
+    font-size: 1.2rem;
+}
+
+.game-board {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .game-board { grid-template-columns: 1fr; }
+}
+
+.panel {
+    background-color: var(--panel-bg);
+    border: 3px solid #333;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+h2 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.9rem;
+    color: var(--accent-gold);
+    border-bottom: 2px dashed #444;
+    padding-bottom: 10px;
+}
+
+/* Combos */
+.combo-card {
+    background: #2A2D3E;
+    border: 2px solid #444;
+    padding: 10px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 4px;
+}
+
+.combo-card.completed {
+    border-color: var(--accent-green);
+    background: #1B382B;
+}
+
+.combo-info small {
+    display: block;
+    color: #AAA;
+}
+
+.btn-claim {
+    background: var(--accent-gold);
+    border: none;
+    padding: 8px 12px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.6rem;
+    cursor: pointer;
+}
+
+.btn-claim:disabled {
+    background: #555;
+    cursor: not-allowed;
+}
+
+.turn-tracker {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8rem;
+    color: var(--accent-red);
+    text-align: center;
+    margin-top: 15px;
+}
+
+/* Dados */
+.dice-container {
+    display: flex;
+    justify-content: space-around;
+    margin: 30px 0;
+}
+
+.die {
+    width: 60px;
+    height: 60px;
+    background: #FFF;
+    color: #000;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    border: 4px solid #CCC;
+    cursor: pointer;
+    user-select: none;
+}
+
+.die.held {
+    background: var(--accent-gold);
+    border-color: #FF9900;
+    transform: translateY(-5px);
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 15px;
+    background: var(--accent-red);
+    color: #FFF;
+    border: none;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.message {
+    margin-top: 15px;
+    text-align: center;
+    color: var(--accent-gold);
+}
+
+/* Modal Infografías */
+.modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.hidden { display: none; }
+
+.modal-content {
+    background: var(--panel-bg);
+    border: 3px solid var(--accent-gold);
+    padding: 20px;
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+    text-align: center;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px; right: 15px;
+    font-size: 1.5rem;
+    color: #FFF;
+    cursor: pointer;
+}
+
+.infographic-placeholder {
+    margin-top: 15px;
+    padding: 15px;
+    background: #000;
+    border: 1px dashed var(--accent-gold);
+    color: #EEE;
+    text-align: left;
+}
