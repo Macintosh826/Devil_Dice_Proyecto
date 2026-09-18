@@ -9,7 +9,7 @@
 </head>
 <body>
 
-    <!-- MENÚ DE SELECCIÓN INICIAL DE JUEGOS -->
+    <!-- MENÚ DE SELECCIÓN INICIAL -->
     <div id="game-selector-screen" class="selector-container">
         <h1>PRESS START: SELECCIONA UN JUEGO</h1>
         <p>Elige la experiencia interactiva que deseas jugar:</p>
@@ -19,12 +19,12 @@
         </div>
     </div>
 
-    <!-- JUEGO 1: DEVIL DICE (DADOS) -->
+    <!-- JUEGO 1: DADOS (DEVIL DICE) -->
     <div id="dice-game-section" class="game-section hidden">
         <button class="btn-back" onclick="showSelector()">← Volver a la selección</button>
         <header>
             <h1>PRESS START: DADOS Y CONSUMO</h1>
-            <p class="sub">Consigue los 4 combos para desbloquear hallazgos</p>
+            <p class="sub">Consigue los 4 combos para desbloquear hallazgos académicos</p>
         </header>
 
         <main class="game-board">
@@ -66,7 +66,7 @@
         </main>
     </div>
 
-    <!-- JUEGO 2: CRESCENT SOLITAIRE (CARTAS) -->
+    <!-- JUEGO 2: CRESCENT SOLITAIRE -->
     <div id="crescent-game-section" class="game-section hidden">
         <button class="btn-back" onclick="showSelector()">← Volver a la selección</button>
         <header>
@@ -75,36 +75,29 @@
         </header>
 
         <div class="crescent-board">
-            <!-- BASES CENTRALES (8 PILAS) -->
             <div class="foundations-container">
-                <!-- Fila Superior: K a A (Descendente) -->
                 <div class="foundation-row">
                     <div class="card-slot foundation" id="f-top-0" onclick="placeOnFoundation('top', 0)">K</div>
                     <div class="card-slot foundation" id="f-top-1" onclick="placeOnFoundation('top', 1)">K</div>
                     <div class="card-slot foundation" id="f-top-2" onclick="placeOnFoundation('top', 2)">K</div>
                     <div class="card-slot foundation" id="f-top-3" onclick="placeOnFoundation('top', 3)">K</div>
                 </div>
-                <!-- Fila Inferior: A a K (Ascendente) -->
                 <div class="foundation-row">
                     <div class="card-slot foundation" id="f-bot-0" onclick="placeOnFoundation('bot', 0)">A</div>
                     <div class="card-slot foundation" id="f-bot-1" onclick="placeOnFoundation('bot', 1)">A</div>
                     <div class="card-slot foundation" id="f-bot-2" onclick="placeOnFoundation('bot', 2)">A</div>
                     <div class="card-slot foundation" id="f-bot-3" onclick="placeOnFoundation('bot', 3)">A</div>
                 </div>
-                <!-- Botón de recargar / barajar -->
                 <div class="controls-crescent">
                     <button id="btn-shuffle" class="btn-primary" onclick="shuffleCrescent()">BARAJAR (Quedan: <span id="shuffles-left">6</span>)</button>
                 </div>
             </div>
 
-            <!-- ANILLO EXTERNO DE 16 MONTONES -->
-            <div class="outer-piles-grid" id="outer-piles-container">
-                <!-- Generado dinámicamente desde JavaScript -->
-            </div>
+            <div class="outer-piles-grid" id="outer-piles-container"></div>
         </div>
     </div>
 
-    <!-- MODAL DE DATOS / VIDEO -->
+    <!-- MODAL POPUP -->
     <div id="info-modal" class="modal hidden">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
@@ -112,6 +105,10 @@
             <div id="modal-body"></div>
         </div>
     </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
 
     <script src="script.js"></script>
 </body>
