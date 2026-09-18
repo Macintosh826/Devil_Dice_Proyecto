@@ -3,89 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Press Start: Del Cartucho a la Nube - El Juego de Dados</title>
+    <title>Press Start: Portal de Juegos</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <header>
-        <h1>PRESS START: DADOS Y CONSUMO</h1>
-        <p class="sub">Consigue los 4 combos en 10 turnos para desbloquear las 20 infografías académicas</p>
-    </header>
+    <!-- MENÚ DE SELECCIÓN INICIAL DE JUEGOS -->
+    <div id="game-selector-screen" class="selector-container">
+        <h1>PRESS START: SELECCIONA UN JUEGO</h1>
+        <p>Elige la experiencia interactiva que deseas jugar:</p>
+        <div class="selector-buttons">
+            <button class="btn-selector" onclick="selectGame('dice')">🎲 DEVIL DICE (DADOS)</button>
+            <button class="btn-selector" onclick="selectGame('crescent')">🃏 CRESCENT SOLITAIRE (CARTAS)</button>
+        </div>
+    </div>
 
-    <main class="game-board">
-        <!-- PANEL IZQUIERDO: SCOREBOARD / COMBOS -->
-        <section class="panel score-panel">
-            <h2>COMBOS OBLIGATORIOS</h2>
-            <div class="combo-card" id="card-trio">
-                <div class="combo-info">
-                    <strong>1. Trío (3 iguales)</strong>
-                    <small>Desbloquea: Evolución del Mercado</small>
+    <!-- JUEGO 1: DEVIL DICE (DADOS) -->
+    <div id="dice-game-section" class="game-section hidden">
+        <button class="btn-back" onclick="showSelector()">← Volver a la selección</button>
+        <header>
+            <h1>PRESS START: DADOS Y CONSUMO</h1>
+            <p class="sub">Consigue los 4 combos para desbloquear hallazgos</p>
+        </header>
+
+        <main class="game-board">
+            <section class="panel score-panel">
+                <h2>COMBOS OBLIGATORIOS</h2>
+                <div class="combo-card" id="card-trio">
+                    <div class="combo-info"><strong>1. Trío (3 iguales)</strong></div>
+                    <button class="btn-claim" onclick="claimCombo('trio')">Validar</button>
                 </div>
-                <button class="btn-claim" onclick="claimCombo('trio')">Validar</button>
-            </div>
-
-            <div class="combo-card" id="card-full">
-                <div class="combo-info">
-                    <strong>2. Full House (3 + 2)</strong>
-                    <small>Desbloquea: Percepción de Valor</small>
+                <div class="combo-card" id="card-full">
+                    <div class="combo-info"><strong>2. Full House (3 + 2)</strong></div>
+                    <button class="btn-claim" onclick="claimCombo('full')">Validar</button>
                 </div>
-                <button class="btn-claim" onclick="claimCombo('full')">Validar</button>
-            </div>
-
-            <div class="combo-card" id="card-straight">
-                <div class="combo-info">
-                    <strong>3. Escalera (4 consecutivos)</strong>
-                    <small>Desbloquea: Patrones de Compra</small>
+                <div class="combo-card" id="card-straight">
+                    <div class="combo-info"><strong>3. Escalera (4 consecutivos)</strong></div>
+                    <button class="btn-claim" onclick="claimCombo('straight')">Validar</button>
                 </div>
-                <button class="btn-claim" onclick="claimCombo('straight')">Validar</button>
-            </div>
-
-            <div class="combo-card" id="card-generala">
-                <div class="combo-info">
-                    <strong>4. Cinco Iguales (5 iguales)</strong>
-                    <small>Desbloquea: Backlog Digital</small>
+                <div class="combo-card" id="card-generala">
+                    <div class="combo-info"><strong>4. Cinco Iguales (5 iguales)</strong></div>
+                    <button class="btn-claim" onclick="claimCombo('generala')">Validar</button>
                 </div>
-                <button class="btn-claim" onclick="claimCombo('generala')">Validar</button>
+                <div class="turn-tracker">TURNOS RESTANTES: <span id="turns-left">10</span></div>
+            </section>
+
+            <section class="panel dice-panel">
+                <h2>MESA DE DADOS</h2>
+                <div class="dice-container" id="dice-container">
+                    <div class="die" data-index="0" onclick="toggleHold(0)">?</div>
+                    <div class="die" data-index="1" onclick="toggleHold(1)">?</div>
+                    <div class="die" data-index="2" onclick="toggleHold(2)">?</div>
+                    <div class="die" data-index="3" onclick="toggleHold(3)">?</div>
+                    <div class="die" data-index="4" onclick="toggleHold(4)">?</div>
+                </div>
+                <div class="controls">
+                    <button id="btn-roll" class="btn-primary" onclick="rollDice()">LANZAR DADOS 🎲</button>
+                </div>
+                <div id="game-message" class="message">¡Lanza los dados para comenzar!</div>
+            </section>
+        </main>
+    </div>
+
+    <!-- JUEGO 2: CRESCENT SOLITAIRE (CARTAS) -->
+    <div id="crescent-game-section" class="game-section hidden">
+        <button class="btn-back" onclick="showSelector()">← Volver a la selección</button>
+        <header>
+            <h1>CRESCENT SOLITAIRE</h1>
+            <p class="sub">Completa las 8 bases centrales para desbloquear el video del proyecto</p>
+        </header>
+
+        <div class="crescent-board">
+            <!-- BASES CENTRALES (8 PILAS) -->
+            <div class="foundations-container">
+                <!-- Fila Superior: K a A (Descendente) -->
+                <div class="foundation-row">
+                    <div class="card-slot foundation" id="f-top-0" onclick="placeOnFoundation('top', 0)">K</div>
+                    <div class="card-slot foundation" id="f-top-1" onclick="placeOnFoundation('top', 1)">K</div>
+                    <div class="card-slot foundation" id="f-top-2" onclick="placeOnFoundation('top', 2)">K</div>
+                    <div class="card-slot foundation" id="f-top-3" onclick="placeOnFoundation('top', 3)">K</div>
+                </div>
+                <!-- Fila Inferior: A a K (Ascendente) -->
+                <div class="foundation-row">
+                    <div class="card-slot foundation" id="f-bot-0" onclick="placeOnFoundation('bot', 0)">A</div>
+                    <div class="card-slot foundation" id="f-bot-1" onclick="placeOnFoundation('bot', 1)">A</div>
+                    <div class="card-slot foundation" id="f-bot-2" onclick="placeOnFoundation('bot', 2)">A</div>
+                    <div class="card-slot foundation" id="f-bot-3" onclick="placeOnFoundation('bot', 3)">A</div>
+                </div>
+                <!-- Botón de recargar / barajar -->
+                <div class="controls-crescent">
+                    <button id="btn-shuffle" class="btn-primary" onclick="shuffleCrescent()">BARAJAR (Quedan: <span id="shuffles-left">6</span>)</button>
+                </div>
             </div>
 
-            <div class="turn-tracker">
-                TURNOS RESTANTES: <span id="turns-left">10</span>
+            <!-- ANILLO EXTERNO DE 16 MONTONES -->
+            <div class="outer-piles-grid" id="outer-piles-container">
+                <!-- Generado dinámicamente desde JavaScript -->
             </div>
-        </section>
+        </div>
+    </div>
 
-        <!-- PANEL DERECHO: ZONA DE DADOS -->
-        <section class="panel dice-panel">
-            <h2>MESA DE DADOS</h2>
-            <p class="instruction">Haz clic en los dados para guardarlos/reservarlos antes de volver a lanzar.</p>
-
-            <!-- Zona de dados lanzados -->
-            <div class="dice-container" id="dice-container">
-                <div class="die" data-index="0" onclick="toggleHold(0)">?</div>
-                <div class="die" data-index="1" onclick="toggleHold(1)">?</div>
-                <div class="die" data-index="2" onclick="toggleHold(2)">?</div>
-                <div class="die" data-index="3" onclick="toggleHold(3)">?</div>
-                <div class="die" data-index="4" onclick="toggleHold(4)">?</div>
-            </div>
-
-            <div class="controls">
-                <button id="btn-roll" class="btn-primary" onclick="rollDice()">LANZAR DADOS 🎲</button>
-            </div>
-
-            <div id="game-message" class="message">¡Haz clic en Lanzar Dados para empezar!</div>
-        </section>
-    </main>
-
-    <!-- MODAL POPUP PARA MOSTRAR INFOGRAFÍAS AL DESBLOQUEAR -->
+    <!-- MODAL DE DATOS / VIDEO -->
     <div id="info-modal" class="modal hidden">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h2 id="modal-title">¡INFOGRAFÍA DESBLOQUEADA!</h2>
-            <p id="modal-desc"></p>
-            <div id="modal-body" class="infographic-placeholder">
-                <!-- Aquí se cargará la imagen de la infografía o texto del hallazgo -->
-            </div>
+            <h2 id="modal-title">¡INFORMACIÓN!</h2>
+            <div id="modal-body"></div>
         </div>
     </div>
 
