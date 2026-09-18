@@ -1,94 +1,53 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Press Start: Del Cartucho a la Nube - El Juego de Dados</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Press Start: del cartucho a la nube</title>
+  <!-- Tus estilos CSS van aquí -->
 </head>
 <body>
 
-    <header>
-        <h1>PRESS START: DADOS Y CONSUMO</h1>
-        <p class="sub">Consigue los 4 combos en 10 turnos para desbloquear las 4 infografías académicas</p>
-    </header>
+  <!-- AQUÍ VA TODO EL CONTENIDO O INTERFAZ DE TU JUEGO -->
+  <div id="pantalla-juego"></div>
 
-    <main class="game-board">
-        <!-- PANEL IZQUIERDO: SCOREBOARD / COMBOS -->
-        <section class="panel score-panel">
-            <h2>COMBOS OBLIGATORIOS</h2>
-            <div class="combo-card" id="card-trio">
-                <div class="combo-info">
-                    <strong>1. Trío (3 iguales)</strong>
-                    <small>Desbloquea: Evolución del Mercado</small>
-                </div>
-                <button class="btn-claim" onclick="claimCombo('trio')">Validar</button>
-            </div>
+  <!-- ========================================================== -->
+  <!-- UBICACIÓN EXACTA DEL SCRIPT DE HALLAZGOS ACADÉMICOS        -->
+  <!-- ========================================================== -->
+  <script>
+    // 1. Arreglo con los 16 hallazgos
+    window.hallazgosAcademicos = [
+      "Hallazgo Académico: La desmaterialización en los videojuegos no responde solo a la preferencia del usuario, sino a una decisión estratégica de la industria...",
+      "Hallazgo Académico: El factor de decisión más determinante para la adopción masiva del formato digital entre jóvenes de 20 a 30 años es la comodidad...",
+      "Hallazgo Académico: La transición a licencias digitales ha cambiado la propiedad por una licencia de uso condicionado...",
+      "Hallazgo Académico: La satisfacción de uso, la disponibilidad inmediata y las funciones de juego en línea son predictores más sólidos...",
+      "Hallazgo Académico: El consumidor del formato digital pierde la facultad de prestar, revender o conservar de forma autónoma sus videojuegos...",
+      "Hallazgo Académico: La desaparición del soporte físico elimina elementos simbólicos de alto valor afectivo para el usuario...",
+      "Hallazgo Académico: En contextos latinoamericanos como Bogotá, la transición digital enfrenta brechas particulares como el acceso limitado...",
+      "Hallazgo Académico: La existencia de mercados informales de videojuegos físicos en Bogotá actúa como una alternativa...",
+      "Hallazgo Académico: El mercado global de videojuegos generó $187.700 millones de dólares en 2023...",
+      "Hallazgo Académico: El usuario mixto habita en una constante negociación entre el apego emocional a las ediciones físicas y la practicidad...",
+      "Hallazgo Académico: La migración a catálogos digitales ha transformado el valor del videojuego...",
+      "Hallazgo Académico: En la población de 20 a 30 años en Bogotá, la primera generación testigo directo de la transición completa...",
+      "Hallazgo Académico: Las plataformas de distribución por suscripción (como Game Pass y PS Plus) han desplazado la compra individual...",
+      "Hallazgo Académico: El gasto en contenido digital a nivel global ha llevado a las ventas físicas a representar una fracción marginal...",
+      "Hallazgo Académico: Las decisiones de compra en entornos digitales están altamente condicionadas por eventos de oferta temporal...",
+      "Hallazgo Académico: La desmaterialización del consumo cultural modifica la relación económica del usuario..."
+    ];
 
-            <div class="combo-card" id="card-full">
-                <div class="combo-info">
-                    <strong>2. Full House (3 + 2)</strong>
-                    <small>Desbloquea: Percepción de Valor</small>
-                </div>
-                <button class="btn-claim" onclick="claimCombo('full')">Validar</button>
-            </div>
+    // 2. Copia para controlar datos no repetidos
+    window.hallazgosDisponibles = [...window.hallazgosAcademicos];
 
-            <div class="combo-card" id="card-straight">
-                <div class="combo-info">
-                    <strong>3. Escalera (4 consecutivos)</strong>
-                    <small>Desbloquea: Patrones de Compra</small>
-                </div>
-                <button class="btn-claim" onclick="claimCombo('straight')">Validar</button>
-            </div>
+    // 3. Función para obtener un dato aleatorio
+    window.obtenerDatoAleatorio = function() {
+      if (window.hallazgosDisponibles.length === 0) {
+        window.hallazgosDisponibles = [...window.hallazgosAcademicos];
+      }
+      const index = Math.floor(Math.random() * window.hallazgosDisponibles.length);
+      const datoSeleccionado = window.hallazgosDisponibles[index];
+      window.hallazgosDisponibles.splice(index, 1);
+      return datoSeleccionado;
+    };
+  </script>
 
-            <div class="combo-card" id="card-generala">
-                <div class="combo-info">
-                    <strong>4. Cinco Iguales (5 iguales)</strong>
-                    <small>Desbloquea: Backlog Digital</small>
-                </div>
-                <button class="btn-claim" onclick="claimCombo('generala')">Validar</button>
-            </div>
-
-            <div class="turn-tracker">
-                TURNOS RESTANTES: <span id="turns-left">10</span>
-            </div>
-        </section>
-
-        <!-- PANEL DERECHO: ZONA DE DADOS -->
-        <section class="panel dice-panel">
-            <h2>MESA DE DADOS</h2>
-            <p class="instruction">Haz clic en los dados para guardarlos/reservarlos antes de volver a lanzar.</p>
-
-            <!-- Zona de dados lanzados -->
-            <div class="dice-container" id="dice-container">
-                <div class="die" data-index="0" onclick="toggleHold(0)">?</div>
-                <div class="die" data-index="1" onclick="toggleHold(1)">?</div>
-                <div class="die" data-index="2" onclick="toggleHold(2)">?</div>
-                <div class="die" data-index="3" onclick="toggleHold(3)">?</div>
-                <div class="die" data-index="4" onclick="toggleHold(4)">?</div>
-            </div>
-
-            <div class="controls">
-                <button id="btn-roll" class="btn-primary" onclick="rollDice()">LANZAR DADOS 🎲</button>
-            </div>
-
-            <div id="game-message" class="message">¡Haz clic en Lanzar Dados para empezar!</div>
-        </section>
-    </main>
-
-    <!-- MODAL POPUP PARA MOSTRAR INFOGRAFÍAS AL DESBLOQUEAR -->
-    <div id="info-modal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h2 id="modal-title">¡INFOGRAFÍA DESBLOQUEADA!</h2>
-            <p id="modal-desc"></p>
-            <div id="modal-body" class="infographic-placeholder">
-                <!-- Aquí se cargará la imagen de la infografía o texto del hallazgo -->
-            </div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
 </body>
 </html>
