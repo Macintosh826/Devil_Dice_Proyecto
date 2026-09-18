@@ -12,29 +12,33 @@ const combosCompleted = {
     generala: false
 };
 
-// Datos de la Investigación (Contenido de Infografías)[cite: 1]
-const researchData = {
-    trio: {
-        title: "INFOGRAFÍA 1: EVOLUCIÓN DEL MERCADO (2016-2026)",
-        desc: "¡Combo Trío Completado!",
-        content: "<b>Hallazgo Académico:</b> Durante el periodo 2016–2026 en Bogotá, la disponibilidad física disminuyó en un 65% mientras el consumo por plataformas digitales y suscripciones (Game Pass, PS Plus) se consolidó como el canal principal de acceso."
-    },
-    full: {
-        title: "INFOGRAFÍA 2: PERCEPCIÓN DE VALOR",
-        desc: "¡Combo Full House Completado!",
-        content: "<b>Hallazgo Académico:</b> El <i>Coleccionista</i> otorga valor simbólico al objeto físico, reventa y caja. El <i>Nativo Digital</i> prioriza la inmediatez, comodidad y precio bajo sobre la propiedad tangible."
-    },
-    straight: {
-        title: "INFOGRAFÍA 3: PATRONES DE COMPRA BOGOTÁ",
-        desc: "¡Combo Escalera Completado!",
-        content: "<b>Hallazgo Académico:</b> Los jóvenes de 20-30 años en Bogotá realizan compras digitales impulsivas aprovechando rebajas de temporada, mientras que la compra de formato físico es planificada para títulos específicos de alto valor afectivo."
-    },
-    generala: {
-        title: "INFOGRAFÍA 4: EL FENÓMENO DEL BACKLOG DIGITAL",
-        desc: "¡Combo 5 Iguales Completado!",
-        content: "<b>Hallazgo Académico:</b> La acumulación de licencias digitales sin jugar (<i>Backlog</i>) representa la nueva forma de consumo. El usuario acumula decenas de títulos en bibliotecas virtuales a los que raramente regresa."
-    }
+// Títulos de las infografías vinculadas a cada combo
+const comboTitles = {
+    trio: "INFOGRAFÍA 1: EVOLUCIÓN DEL MERCADO (2016-2026)",
+    full: "INFOGRAFÍA 2: PERCEPCIÓN DE VALOR",
+    straight: "INFOGRAFÍA 3: PATRONES DE COMPRA EN BOGOTÁ",
+    generala: "INFOGRAFÍA 4: EL FENÓMENO DEL BACKLOG DIGITAL"
 };
+
+// Lista completa de 16 Hallazgos Académicos
+let academicFindings = [
+    "Hallazgo Académico: La desmaterialización en los videojuegos no responde solo a la preferencia del usuario, sino a una decisión estratégica de la industria para eliminar costos de manufactura, almacenamiento y logística física, ampliando el alcance global.",
+    "Hallazgo Académico: El factor de decisión más determinante para la adopción masiva del formato digital entre jóvenes de 20 a 30 años es la comodidad y la inmediatez de descarga, superando al precio y a la calidad percibida del producto.",
+    "Hallazgo Académico: La transición a licencias digitales ha cambiado la propiedad por una licencia de uso condicionado, donde la plataforma puede modificar, restringir o revocar el acceso al contenido de forma unilateral.",
+    "Hallazgo Académico: La satisfacción de uso, la disponibilidad inmediata y las funciones de juego en línea son predictores más sólidos de la intención de compra digital que la posesión del producto en sí.",
+    "Hallazgo Académico: El consumidor del formato digital pierde la facultad de prestar, revender o conservar de forma autónoma sus videojuegos, asumiendo una asimetría de poder estructural frente a las plataformas de distribución.",
+    "Hallazgo Académico: La desaparición del soporte físico elimina elementos simbólicos de alto valor afectivo para el usuario, como cajas impresas, portadas ilustradas, manuales y colecciones de ediciones especiales.",
+    "Hallazgo Académico: En contextos latinoamericanos como Bogotá, la transición digital enfrenta brechas particulares como el acceso limitado a medios de pago internacionales y niveles de conectividad desigual.",
+    "Hallazgo Académico: La existencia de mercados informales de videojuegos físicos en Bogotá actúa como una alternativa que aún sostiene la circulación del formato tangible frente a las tiendas digitales globales.",
+    "Hallazgo Académico: El mercado global de videojuegos generó $187.700 millones de dólares en 2023, donde el segmento digital y los servicios de suscripción fueron el motor principal de crecimiento sobre el formato físico.",
+    "Hallazgo Académico: El usuario mixto habita en una constante negociación entre el apego emocional a las ediciones físicas y la practicidad o rebajas del entorno digital.",
+    "Hallazgo Académico: La migración a catálogos digitales ha transformado el valor del videojuego: ya no depende de la tenencia del soporte, sino de las comunidades, servicios e interacciones de la plataforma.",
+    "Hallazgo Académico: En la población de 20 a 30 años en Bogotá, la primera generación testigo directo de la transición completa de soporte, la valoración del formato físico reaparece principalmente en títulos con fuerte valor nostálgico o afectivo.",
+    "Hallazgo Académico: Las plataformas de distribución por suscripción (como Game Pass y PS Plus) han desplazado la compra individual de títulos hacia el consumo de catálogos rotativos bajo pago recurrente.",
+    "Hallazgo Académico: El gasto en contenido digital a nivel global ha llevado a las ventas físicas a representar una fracción marginal del mercado global de entretenimiento interactivo.",
+    "Hallazgo Académico: Las decisiones de compra en entornos digitales están altamente condicionadas por eventos de oferta temporal, impulsando compras no planificadas de licencias.",
+    "Hallazgo Académico: La desmaterialización del consumo cultural modifica la relación económica del usuario, transitando del concepto tradicional de comprador de bienes al de suscriptor de servicios."
+];
 
 // Función para lanzar dados
 function rollDice() {
@@ -114,7 +118,7 @@ function checkCombo(type) {
     return false;
 }
 
-// Reclamar combo y desbloquear infografía
+// Reclamar combo y desbloquear hallazgo aleatorio
 function claimCombo(type) {
     if (combosCompleted[type]) return;
 
@@ -122,14 +126,18 @@ function claimCombo(type) {
         combosCompleted[type] = true;
         document.getElementById(`card-${type}`).classList.add('completed');
         
-        // Resetear reservas para el siguiente tiro
+        // Deshabilitar el botón del combo conseguido
+        const btn = document.querySelector(`#card-${type} .btn-claim`);
+        if (btn) btn.disabled = true;
+
+        // Resetear reservas de dados para el siguiente tiro
         heldDice = [false, false, false, false, false];
         
         showModal(type);
         updateUI();
 
         if (checkAllCompleted()) {
-            document.getElementById('game-message').innerText = "¡FELICITACIONES! Has desbloqueado toda la investigación.";
+            document.getElementById('game-message').innerText = "¡FELICITACIONES! Has completado todos los combos y desbloqueado la investigación.";
         }
     } else {
         alert("Los dados actuales no cumplen con la condición de este combo. ¡Sigue intentando!");
@@ -140,18 +148,38 @@ function checkAllCompleted() {
     return Object.values(combosCompleted).every(val => val === true);
 }
 
-// Modal
+// Obtener un hallazgo aleatorio y extraerlo de la lista para no repetirlo
+function getRandomFinding() {
+    if (academicFindings.length === 0) {
+        return "Hallazgo Académico: Has revisado todos los datos disponibles de la investigación.";
+    }
+    const randomIndex = Math.floor(Math.random() * academicFindings.length);
+    const selectedFinding = academicFindings[randomIndex];
+    
+    // Elimina el dato seleccionado de la lista para evitar repeticiones
+    academicFindings.splice(randomIndex, 1);
+    
+    return selectedFinding;
+}
+
+// Mostrar Modal emergente con dato aleatorio
 function showModal(type) {
-    const data = researchData[type];
-    document.getElementById('modal-title').innerText = data.title;
-    document.getElementById('modal-desc').innerText = data.desc;
+    const title = comboTitles[type];
+    const randomFinding = getRandomFinding();
+
+    document.getElementById('modal-title').innerText = title;
+    document.getElementById('modal-desc').innerText = "¡Combo Completado con Éxito!";
     document.getElementById('modal-body').innerHTML = `
-        <p>${data.content}</p>
-        <p><small>* En tu versión final de GitHub puedes reemplazar este texto con la imagen <img src="assets/infografia_${type}.png"> de Canva.</small></p>
+        <div style="font-size: 0.95rem; line-height: 1.5; padding: 10px;">
+            <p><strong>${randomFinding}</strong></p>
+        </div>
     `;
     document.getElementById('info-modal').classList.remove('hidden');
 }
 
+function closeModal() {
+    document.getElementById('info-modal').classList.add('hidden');
+}
 function closeModal() {
     document.getElementById('info-modal').classList.add('hidden');
 }
