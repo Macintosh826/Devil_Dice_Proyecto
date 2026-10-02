@@ -3,169 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Press Start: Portal de Juegos</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <title>Crescent Solitaire - Edition Mejorada</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: radial-gradient(circle, #1a4d2e 0%, #0d2818 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        h1 { font-size: 2.2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.6); letter-spacing: 1px; color: #f1c40f; }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            align-items: center;
+        }
+        button, select {
+            padding: 8px 16px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #27ae60;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+        }
+        button:hover { background: #2ecc71; transform: translateY(-2px); }
+        button:disabled { background: #7f8c8d; cursor: not-allowed; transform: none; }
+        select { background: #2c3e50; }
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-size: 1.1rem;
+            background: rgba(0,0,0,0.4);
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-top: 10px;
+        }
+        #game-board {
+            position: relative;
+            width: 1000px;
+            height: 650px;
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        .card {
+            width: 70px;
+            height: 100px;
+            border-radius: 8px;
+            background: white;
+            color: black;
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card.red { color: #e74c3c; }
+        .card.black { color: #2c3e50; }
+        .card.selected {
+            outline: 3px solid #f1c40f;
+            transform: scale(1.08);
+            z-index: 1000 !important;
+        }
+        .slot {
+            width: 70px;
+            height: 100px;
+            border-radius: 8px;
+            border: 2px dashed rgba(255,255,255,0.3);
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+        }
+    </style>
 </head>
 <body>
-
-    <!-- MENÚ DE SELECCIÓN INICIAL -->
-    <div id="game-selector-screen" class="selector-container">
-        <h1>PRESS START: SELECCIONA UN JUEGO</h1>
-        <p>Elige la experiencia interactiva que deseas jugar:</p>
-        <div class="selector-buttons">
-            <button class="btn-selector" onclick="selectGame('dice')">🎲 DEVIL DICE (DADOS)</button>
-            <button class="btn-selector" onclick="selectGame('crescent')">🃏 CRESCENT SOLITAIRE (CARTAS)</button>
-            <button class="btn-selector" onclick="selectGame('crazyeights')">🎴 OCHO LOCO (CRAZY EIGHTS)</button>
+    <header>
+        <h1>CRESCENT SOLITAIRE</h1>
+        <div class="controls">
+            <button onclick="initGame()">Nuevo Juego</button>
+            <button id="shuffle-btn" onclick="shuffleTableau()">Barajar (<span id="shuffles-left">6</span>)</button>
+            <select id="difficulty" onchange="changeDifficulty()">
+                <option value="9">Fácil (9 Barajados)</option>
+                <option value="6" selected>Medio (6 Barajados)</option>
+                <option value="3">Difícil (3 Barajados)</option>
+            </select>
         </div>
-    </div>
-
-    <!-- JUEGO 1: DADOS (DEVIL DICE) -->
-    <div id="dice-game-section" class="game-section hidden">
-        <button class="btn-back" onclick="showSelector()">← Volver a la selección</button>
-        <header>
-            <h1>PRESS START: DADOS Y CONSUMO</h1>
-            <p class="sub">Consigue los 4 combos para desbloquear hallazgos académicos</p>
-        </header>
-
-        <main class="game-board">
-            <section class="panel score-panel">
-                <h2>COMBOS OBLIGATORIOS</h2>
-                <div class="combo-card" id="card-trio">
-                    <div class="combo-info"><strong>1. Trío (3 iguales)</strong></div>
-                    <button class="btn-claim" onclick="claimCombo('trio')">Validar</button>
-                </div>
-                <div class="combo-card" id="card-full">
-                    <div class="combo-info"><strong>2. Full House (3 + 2)</strong></div>
-                    <button class="btn-claim" onclick="claimCombo('full')">Validar</button>
-                </div>
-                <div class="combo-card" id="card-straight">
-                    <div class="combo-info"><strong>3. Escalera (4 consecutivos)</strong></div>
-                    <button class="btn-claim" onclick="claimCombo('straight')">Validar</button>
-                </div>
-                <div class="combo-card" id="card-generala">
-                    <div class="combo-info"><strong>4. Cinco Iguales (5 iguales)</strong></div>
-                    <button class="btn-claim" onclick="claimCombo('generala')">Validar</button>
-                </div>
-                <div class="turn-tracker">TURNOS RESTANTES: <span id="turns-left">10</span></div>
-            </section>
-
-            <section class="panel dice-panel">
-                <h2>MESA DE DADOS</h2>
-                <div class="dice-container" id="dice-container">
-                    <div class="die" data-index="0" onclick="toggleHold(0)">?</div>
-                    <div class="die" data-index="1" onclick="toggleHold(1)">?</div>
-                    <div class="die" data-index="2" onclick="toggleHold(2)">?</div>
-                    <div class="die" data-index="3" onclick="toggleHold(3)">?</div>
-                    <div class="die" data-index="4" onclick="toggleHold(4)">?</div>
-                </div>
-                <div class="controls">
-                    <button id="btn-roll" class="btn-primary" onclick="rollDice()">LANZAR DADOS 🎲</button>
-                </div>
-                <div id="game-message" class="message">¡Lanza los dados para comenzar!</div>
-            </section>
-        </main>
-    </div>
-
-    <!-- JUEGO 2: CRESCENT SOLITAIRE -->
-    <div id="crescent-game-section" class="game-section hidden">
-        <button class="btn-back" onclick="showSelector()">← Volver a la selección</button>
-        <header>
-            <h1>CRESCENT SOLITAIRE</h1>
-            <p class="sub">Completa las 8 bases centrales para desbloquear el video del proyecto</p>
-        </header>
-
-        <div class="crescent-board">
-            <div class="foundations-container">
-                <div class="foundation-row">
-                    <div class="card-slot foundation" id="f-top-0" onclick="placeOnFoundation('top', 0)">K</div>
-                    <div class="card-slot foundation" id="f-top-1" onclick="placeOnFoundation('top', 1)">K</div>
-                    <div class="card-slot foundation" id="f-top-2" onclick="placeOnFoundation('top', 2)">K</div>
-                    <div class="card-slot foundation" id="f-top-3" onclick="placeOnFoundation('top', 3)">K</div>
-                </div>
-                <div class="foundation-row">
-                    <div class="card-slot foundation" id="f-bot-0" onclick="placeOnFoundation('bot', 0)">A</div>
-                    <div class="card-slot foundation" id="f-bot-1" onclick="placeOnFoundation('bot', 1)">A</div>
-                    <div class="card-slot foundation" id="f-bot-2" onclick="placeOnFoundation('bot', 2)">A</div>
-                    <div class="card-slot foundation" id="f-bot-3" onclick="placeOnFoundation('bot', 3)">A</div>
-                </div>
-                <div class="controls-crescent">
-                    <button id="btn-shuffle" class="btn-primary" onclick="shuffleCrescent()">BARAJAR (Quedan: <span id="shuffles-left">6</span>)</button>
-                </div>
-            </div>
-
-            <div class="outer-piles-grid" id="outer-piles-container"></div>
+        <div class="stats">
+            <div>Movimientos: <span id="move-count">0</span></div>
+            <div>Cartas en Base: <span id="foundation-count">8</span> / 104</div>
         </div>
-    </div>
+    </header>
 
-    <!-- JUEGO 3: OCHO LOCO (CRAZY EIGHTS) -->
-    <div id="crazyeights-game-section" class="game-section hidden">
-        <button class="btn-back" onclick="showSelector()">← Volver a la selección</button>
-        <header>
-            <h1>OCHO LOCO (CRAZY EIGHTS)</h1>
-            <p class="sub">Descarta toda tu mano antes que la IA</p>
-        </header>
+    <div id="game-board"></div>
 
-        <div class="crazyeights-board panel">
-            <!-- Mano Rival -->
-            <div class="hand-container">
-                <div class="hand-label">OPONENTE (IA) - CARTAS: <span id="bot-count">0</span></div>
-                <div class="cards-row" id="bot-hand"></div>
-            </div>
+    <script>
+        const SUITS = ['♠', '♥', '♦', '♣'];
+        const VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+        const VALUE_NAMES = {1:'A', 11:'J', 12:'Q', 13:'K'};
 
-            <!-- Zona Central -->
-            <div class="play-area-ce">
-                <div class="deck-zone-ce">
-                    <span class="zone-label">MAZO (<span id="deck-count">0</span>)</span>
-                    <div class="ce-card back" id="deck-card" onclick="drawCardUser()"></div>
-                </div>
+        let tableaus = Array.from({length: 16}, () => []);
+        let foundations = Array.from({length: 8}, () => []);
+        let selectedCard = null;
+        let moves = 0;
+        let shufflesLeft = 6;
 
-                <div class="discard-zone-ce">
-                    <span class="zone-label">MESA (PALO: <span id="current-suit-display" class="suit-highlight">-</span>)</span>
-                    <div id="top-card-container"></div>
-                </div>
-            </div>
+        function getCardName(val) {
+            return VALUE_NAMES[val] || val.toString();
+        }
 
-            <!-- Estado y Mensajes -->
-            <div id="ce-status-msg" class="message ce-banner">Iniciando el juego...</div>
+        function createDeck() {
+            let deck = [];
+            for (let d = 0; d < 2; d++) {
+                for (let s of SUITS) {
+                    for (let v of VALUES) {
+                        deck.push({ suit: s, value: v, isRed: (s === '♥' || s === '♦') });
+                    }
+                }
+            }
+            return deck;
+        }
 
-            <!-- Mano del Jugador -->
-            <div class="hand-container">
-                <div class="hand-label">TU MANO</div>
-                <div class="cards-row" id="user-hand"></div>
-            </div>
+        function initGame() {
+            moves = 0;
+            document.getElementById('move-count').innerText = moves;
+            shufflesLeft = parseInt(document.getElementById('difficulty').value);
+            document.getElementById('shuffles-left').innerText = shufflesLeft;
+            document.getElementById('shuffle-btn').disabled = false;
 
-            <!-- Botones -->
-            <div class="controls-ce">
-                <button class="btn-primary" id="ce-play-btn" onclick="playSelectedCards()" disabled>CONFIRMAR JUGADA</button>
-                <button class="btn-primary btn-alt" id="ce-pass-btn" onclick="passTurn()" disabled>PASAR TURNO</button>
-                <button class="btn-primary btn-alt" onclick="initCrazyEightsGame()">REINICIAR</button>
-            </div>
-        </div>
-    </div>
+            let deck = createDeck();
+            // Shuffle deck
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
 
-    <!-- MODAL POPUP GENERAL -->
-    <div id="info-modal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h2 id="modal-title">¡INFORMACIÓN!</h2>
-            <div id="modal-body"></div>
-        </div>
-    </div>
+            tableaus = Array.from({length: 16}, () => []);
+            foundations = Array.from({length: 8}, () => []);
 
-    <!-- MODAL ELECCIÓN DE PALO (OCHO LOCO) -->
-    <div class="modal hidden" id="suit-modal">
-        <div class="modal-content">
-            <h2>ELIGE UN NUEVO PALO</h2>
-            <div class="suit-options">
-                <button class="suit-btn black" onclick="selectSuit('♠')">♠</button>
-                <button class="suit-btn black" onclick="selectSuit('♣')">♣</button>
-                <button class="suit-btn red" onclick="selectSuit('♥')">♥</button>
-                <button class="suit-btn red" onclick="selectSuit('♦')">♦</button>
-            </div>
-        </div>
-    </div>
+            // Extract Kings & Aces for Foundations
+            let kings = { '♠': [], '♥': [], '♦': [], '♣': [] };
+            let aces = { '♠': [], '♥': [], '♦': [], '♣': [] };
 
-    <script src="script.js"></script>
+            let remainingDeck = [];
+            for (let card of deck) {
+                if (card.value === 13 && kings[card.suit].length < 1) {
+                    kings[card.suit].push(card);
+                } else if (card.value === 1 && aces[card.suit].length < 1) {
+                    aces[card.suit].push(card);
+                } else {
+                    remainingDeck.push(card);
+                }
+            }
+
+            // Top row foundations: Kings (K -> A)
+            let suitOrder = ['♠', '♥', '♣', '♦'];
+            for (let i = 0; i < 4; i++) {
+                foundations[i] = [kings[suitOrder[i]][0]];
+            }
+            // Bottom row foundations: Aces (A -> K)
+            for (let i = 0; i < 4; i++) {
+                foundations[i + 4] = [aces[suitOrder[i]][0]];
+            }
+
+            // Distribute remaining 96 cards into 16 tableaus (6 cards each)
+            for (let i = 0; i < 96; i++) {
+                tableaus[i % 16].push(remainingDeck[i]);
+            }
+
+            renderBoard();
+        }
+
+        function renderBoard() {
+            const board = document.getElementById('game-board');
+            board.innerHTML = '';
+
+            // Render Foundations (Center)
+            const fX = 360, fY = 220;
+            for (let i = 0; i < 8; i++) {
+                let row = Math.floor(i / 4);
+                let col = i % 4;
+                let x = fX + col * 85;
+                let y = fY + row * 115;
+
+                let slot = document.createElement('div');
+                slot.className = 'slot';
+                slot.style.left = x + 'px';
+                slot.style.top = y + 'px';
+                slot.innerText = row === 0 ? 'K ↓' : 'A ↑';
+                board.appendChild(slot);
+
+                let stack = foundations[i];
+                if (stack.length > 0) {
+                    let card = stack[stack.length - 1];
+                    let cardEl = createCardElement(card, x, y, `f-${i}`, stack.length === 1);
+                    cardEl.onclick = () => handleCardClick('foundation', i);
+                    board.appendChild(cardEl);
+                }
+            }
+
+            // Render Crescent Tableaus (Arc Layout)
+            const centerX = 465, centerY = 270, radiusX = 400, radiusY = 220;
+            for (let i = 0; i < 16; i++) {
+                let angle = (Math.PI * 1.1) + (i / 15) * (Math.PI * 1.8);
+                let x = centerX + radiusX * Math.cos(angle);
+                let y = centerY + radiusY * Math.sin(angle);
+
+                let stack = tableaus[i];
+                if (stack.length > 0) {
+                    let card = stack[stack.length - 1];
+                    let cardEl = createCardElement(card, x, y, `t-${i}`);
+                    cardEl.onclick = () => handleCardClick('tableau', i);
+                    board.appendChild(cardEl);
+                } else {
+                    let slot = document.createElement('div');
+                    slot.className = 'slot';
+                    slot.style.left = x + 'px';
+                    slot.style.top = y + 'px';
+                    slot.innerText = 'Vacio';
+                    board.appendChild(slot);
+                }
+            }
+
+            // Update stats
+            let foundationTotal = foundations.reduce((sum, f) => sum + f.length, 0);
+            document.getElementById('foundation-count').innerText = foundationTotal;
+        }
+
+        function createCardElement(card, x, y, id, isInitialBase = false) {
+            let el = document.createElement('div');
+            el.className = `card ${card.isRed ? 'red' : 'black'}`;
+            if (selectedCard && selectedCard.id === id) el.classList.add('selected');
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+
+            let valStr = getCardName(card.value);
+            el.innerHTML = `<div>${valStr} ${card.suit}</div><div style="align-self:flex-end;">${valStr} ${card.suit}</div>`;
+            return el;
+        }
+
+        function handleCardClick(type, index) {
+            let stack = type === 'tableau' ? tableaus[index] : foundations[index];
+            if (stack.length === 0 && !selectedCard) return;
+
+            if (!selectedCard) {
+                // Select card
+                if (type === 'foundation' && stack.length === 1) return; // Cannot remove initial K/A
+                selectedCard = { type, index, card: stack[stack.length - 1], id: `${type[0]}-${index}` };
+            } else {
+                // Try move
+                if (selectedCard.type === type && selectedCard.index === index) {
+                    selectedCard = null; // Deselect
+                } else {
+                    let moved = tryMove(selectedCard, { type, index });
+                    if (moved) {
+                        moves++;
+                        document.getElementById('move-count').innerText = moves;
+                    }
+                    selectedCard = null;
+                }
+            }
+            renderBoard();
+        }
+
+        function tryMove(from, to) {
+            let fromStack = from.type === 'tableau' ? tableaus[from.index] : foundations[from.index];
+            let toStack = to.type === 'tableau' ? tableaus[to.index] : foundations[to.index];
+            let card = from.card;
+
+            if (to.type === 'foundation') {
+                let targetCard = toStack[toStack.length - 1];
+                if (card.suit !== targetCard.suit) return false;
+
+                if (to.index < 4) { // Top row: Descending K -> A
+                    if (card.value === targetCard.value - 1) {
+                        toStack.push(fromStack.pop());
+                        return true;
+                    }
+                } else { // Bottom row: Ascending A -> K
+                    if (card.value === targetCard.value + 1) {
+                        toStack.push(fromStack.pop());
+                        return true;
+                    }
+                }
+            } else if (to.type === 'tableau') {
+                if (toStack.length === 0) return false;
+                let targetCard = toStack[toStack.length - 1];
+                if (card.suit !== targetCard.suit) return false;
+
+                // Cyclical wrap: +1, -1, or K <-> A
+                let diff = Math.abs(card.value - targetCard.value);
+                if (diff === 1 || diff === 12) {
+                    toStack.push(fromStack.pop());
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function shuffleTableau() {
+            if (shufflesLeft <= 0) return;
+            shufflesLeft--;
+            document.getElementById('shuffles-left').innerText = shufflesLeft;
+            if (shufflesLeft === 0) document.getElementById('shuffle-btn').disabled = true;
+
+            // Rotate bottom card to top for each tableau
+            for (let i = 0; i < 16; i++) {
+                if (tableaus[i].length > 1) {
+                    let bottomCard = tableaus[i].shift();
+                    tableaus[i].push(bottomCard);
+                }
+            }
+            renderBoard();
+        }
+
+        function changeDifficulty() {
+            initGame();
+        }
+
+        window.onload = initGame;
+    </script>
 </body>
 </html>
