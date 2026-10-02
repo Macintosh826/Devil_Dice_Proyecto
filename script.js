@@ -8,12 +8,16 @@ function selectGame(gameType) {
     } else if (gameType === 'crescent') {
         document.getElementById('crescent-game-section').classList.remove('hidden');
         initCrescentGame();
+    } else if (gameType === 'crazyeights') {
+        document.getElementById('crazyeights-game-section').classList.remove('hidden');
+        initCrazyEightsGame();
     }
 }
 
 function showSelector() {
     document.getElementById('dice-game-section').classList.add('hidden');
     document.getElementById('crescent-game-section').classList.add('hidden');
+    document.getElementById('crazyeights-game-section').classList.add('hidden');
     document.getElementById('game-selector-screen').classList.remove('hidden');
 }
 
@@ -331,4 +335,290 @@ function checkCrescentWin() {
         `;
         document.getElementById('info-modal').classList.remove('hidden');
     }
+}
+
+// ==========================================
+// JUEGO 3: OCHO LOCO (CRAZY EIGHTS)
+// ==========================================
+let ceDeck = [];
+let ceUserHand = [];
+let ceBotHand = [];
+let ceDiscardPile = [];
+let ceCurrentSuit = '';
+let ceSelectedIndices = [];
+let ceDrawnThisTurn = 0;
+let ceIsUserTurn = true;
+let ceIsGameOver = false;
+
+function createCrazyEightsDeck() {
+    ceDeck = [];
+    for (let s of suits) {
+        for (let v of values) {
+            ceDeck.push({ suit: s, value: v });
+        }
+    }
+    ceDeck.sort(() => Math.random() - 0.5);
+}
+
+function initCrazyEightsGame() {
+    createCrazyEightsDeck();
+    ceUserHand = [];
+    ceBotHand = [];
+    ceDiscardPile = [];
+    ceSelectedIndices = [];
+    ceDrawnThisTurn = 0;
+    ceIsUserTurn = true;
+    ceIsGameOver = false;
+
+    for (let i = 0; i < 7; i++) {
+        ceUserHand.push(ceDeck.pop());
+        ceBotHand.push(ceDeck.pop());
+    }
+
+    let top = ceDeck.pop();
+    ceDiscardPile.push(top);
+    ceCurrentSuit = top.suit;
+
+    if (top.value === '8') {
+        setCEStatus("¡INICIO ESPECIAL! La carta inicial es un 8. Puedes tirar cualquier carta.");
+    } else {
+        setCEStatus("Tu turno. Selecciona una carta compatible o roba si no tienes jugadas.");
+    }
+
+    updateCEUI();
+}
+
+function setCEStatus(msg) {
+    document.getElementById('ce-status-msg').innerText = msg;
+}
+
+function renderCECardHTML(card, isBack = false) {
+    if (isBack) return `<div class="ce-card back"></div>`;
+    const isRed = ['♥', '♦'].includes(card.suit);
+    return `
+      <div class="ce-card ${isRed ? 'red' : 'black'}">
+        <div>${card.value}</div>
+        <div class="suit-center">${card.suit}</div>
+        <div style="align-self: flex-end;">${card.value}</div>
+      </div>
+    `;
+}
+
+function updateCEUI() {
+    document.getElementById('deck-count').innerText = ceDeck.length;
+    const topCard = ceDiscardPile[ceDiscardPile.length - 1];
+    document.getElementById('top-card-container').innerHTML = renderCECardHTML(topCard);
+    document.getElementById('current-suit-display').innerText = ceCurrentSuit;
+
+    document.getElementById('bot-count').innerText = ceBotHand.length;
+    const botContainer = document.getElementById('bot-hand');
+    botContainer.innerHTML = ceBotHand.map(() => renderCECardHTML(null, true)).join('');
+
+    const userContainer = document.getElementById('user-hand');
+    userContainer.innerHTML = '';
+    ceUserHand.forEach((card, index) => {
+        const cardDiv = document.createElement('div');
+        cardDiv.innerHTML = renderCECardHTML(card);
+        const child = cardDiv.firstElementChild;
+
+        if (ceSelectedIndices.includes(index)) {
+            child.classList.add('selected');
+        }
+
+        child.onclick = () => handleCECardClick(index);
+        userContainer.appendChild(child);
+    });
+
+    document.getElementById('ce-play-btn').disabled = ceSelectedIndices.length === 0 || !ceIsUserTurn;
+    document.getElementById('ce-pass-btn').disabled = !(ceIsUserTurn && ceDrawnThisTurn === 3 && !hasPlayableCECard(ceUserHand));
+}
+
+function hasPlayableCECard(hand) {
+    const topCard = ceDiscardPile[ceDiscardPile.length - 1];
+    if (ceDiscardPile.length === 1 && topCard.value === '8') return hand.length > 0;
+
+    return hand.some(card => 
+        card.value === '8' || card.suit === ceCurrentSuit || card.value === topCard.value
+    );
+}
+
+function handleCECardClick(index) {
+    if (!ceIsUserTurn || ceIsGameOver) return;
+
+    const card = ceUserHand[index];
+    const topCard = ceDiscardPile[ceDiscardPile.length - 1];
+
+    if (ceSelectedIndices.length === 0) {
+        const isSpecialStart = (ceDiscardPile.length === 1 && topCard.value === '8');
+        const isValidFirstCard = isSpecialStart || card.value === '8' || card.suit === ceCurrentSuit || card.value === topCard.value;
+
+        if (!isValidFirstCard) {
+            setCEStatus("No puedes jugar esa carta. Debe coincidir en palo o número.");
+            return;
+        }
+        ceSelectedIndices.push(index);
+    } else {
+        if (ceSelectedIndices.includes(index)) {
+            ceSelectedIndices = ceSelectedIndices.filter(i => i !== index);
+        } else {
+            const firstCard = ceUserHand[ceSelectedIndices[0]];
+            if (card.value === firstCard.value) {
+                ceSelectedIndices.push(index);
+            } else {
+                setCEStatus("Para jugar un combo, todas las cartas deben ser del mismo número.");
+                return;
+            }
+        }
+    }
+    updateCEUI();
+}
+
+function drawCardUser() {
+    if (!ceIsUserTurn || ceIsGameOver) return;
+
+    if (hasPlayableCECard(ceUserHand)) {
+        setCEStatus("No puedes robar si tienes cartas jugables en tu mano.");
+        return;
+    }
+
+    if (ceDrawnThisTurn >= 3) {
+        setCEStatus("Ya robaste 3 cartas. Si aún no puedes jugar, debes pasar el turno.");
+        return;
+    }
+
+    if (ceDeck.length > 0) {
+        ceUserHand.push(ceDeck.pop());
+        ceDrawnThisTurn++;
+        setCEStatus(`Has robado una carta (${ceDrawnThisTurn}/3).`);
+        updateCEUI();
+    } else {
+        setCEStatus("El mazo se ha agotado.");
+    }
+}
+
+function playSelectedCards() {
+    if (ceSelectedIndices.length === 0) return;
+
+    ceSelectedIndices.sort((a, b) => b - a);
+    const playedCards = ceSelectedIndices.map(i => ceUserHand[i]);
+
+    ceSelectedIndices.forEach(i => ceUserHand.splice(i, 1));
+    ceSelectedIndices = [];
+
+    playedCards.forEach(c => ceDiscardPile.push(c));
+    const lastPlayed = playedCards[playedCards.length - 1];
+
+    if (lastPlayed.value === '8') {
+        document.getElementById('suit-modal').classList.remove('hidden');
+        return;
+    } else {
+        ceCurrentSuit = lastPlayed.suit;
+    }
+
+    checkCEWinCondition();
+    if (!ceIsGameOver) endUserTurn();
+}
+
+function selectSuit(suit) {
+    ceCurrentSuit = suit;
+    document.getElementById('suit-modal').classList.add('hidden');
+    setCEStatus(`Cambiaste el palo a ${suit}.`);
+    checkCEWinCondition();
+    if (!ceIsGameOver) endUserTurn();
+}
+
+function passTurn() {
+    if (!ceIsUserTurn) return;
+    setCEStatus("Has pasado el turno.");
+    endUserTurn();
+}
+
+function endUserTurn() {
+    ceIsUserTurn = false;
+    ceDrawnThisTurn = 0;
+    updateCEUI();
+    setTimeout(botTurn, 1000);
+}
+
+function botTurn() {
+    if (ceIsGameOver) return;
+    setCEStatus("Turno del rival pensando...");
+
+    let topCard = ceDiscardPile[ceDiscardPile.length - 1];
+    let botDrawn = 0;
+
+    let validMoves = getValidBotMoves();
+
+    while (validMoves.length === 0 && botDrawn < 3 && ceDeck.length > 0) {
+        ceBotHand.push(ceDeck.pop());
+        botDrawn++;
+        validMoves = getValidBotMoves();
+    }
+
+    if (validMoves.length > 0) {
+        let chosenMove = validMoves.find(m => m[0].value !== '8') || validMoves[0];
+
+        chosenMove.forEach(card => {
+            const idx = ceBotHand.indexOf(card);
+            ceBotHand.splice(idx, 1);
+            ceDiscardPile.push(card);
+        });
+
+        const lastPlayed = chosenMove[chosenMove.length - 1];
+        if (lastPlayed.value === '8') {
+            ceCurrentSuit = getBestSuitForBot();
+            setCEStatus(`El rival jugó un 8 y cambió el palo a ${ceCurrentSuit}.`);
+        } else {
+            ceCurrentSuit = lastPlayed.suit;
+            setCEStatus(`El rival jugó ${chosenMove.length} carta(s).`);
+        }
+    } else {
+        setCEStatus("El rival no pudo jugar y pasó turno.");
+    }
+
+    checkCEWinCondition();
+    if (!ceIsGameOver) {
+        ceIsUserTurn = true;
+        ceDrawnThisTurn = 0;
+        updateCEUI();
+    }
+}
+
+function getValidBotMoves() {
+    const topCard = ceDiscardPile[ceDiscardPile.length - 1];
+    const isSpecialStart = (ceDiscardPile.length === 1 && topCard.value === '8');
+    let moves = [];
+
+    let valueGroups = {};
+    ceBotHand.forEach(c => {
+        if (!valueGroups[c.value]) valueGroups[c.value] = [];
+        valueGroups[c.value].push(c);
+    });
+
+    ceBotHand.forEach(card => {
+        const isValid = isSpecialStart || card.value === '8' || card.suit === ceCurrentSuit || card.value === topCard.value;
+        if (isValid) {
+            let sameValueCards = valueGroups[card.value];
+            moves.push(sameValueCards);
+        }
+    });
+
+    return moves;
+}
+
+function getBestSuitForBot() {
+    let counts = { '♠': 0, '♣': 0, '♥': 0, '♦': 0 };
+    ceBotHand.forEach(c => counts[c.suit]++);
+    return Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+}
+
+function checkCEWinCondition() {
+    if (ceUserHand.length === 0) {
+        setCEStatus("¡FELICIDADES! Has ganado la partida. 🎉");
+        ceIsGameOver = true;
+    } else if (ceBotHand.length === 0) {
+        setCEStatus("El rival se ha quedado sin cartas. ¡HA GANADO LA IA! 🤖");
+        ceIsGameOver = true;
+    }
+    updateCEUI();
 }
