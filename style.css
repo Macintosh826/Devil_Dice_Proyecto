@@ -372,6 +372,7 @@ h2 {
     user-select: none;
     transition: transform 0.15s, border-color 0.15s;
     box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+    box-sizing: border-box;
 }
 
 .ce-card.red { color: #D32F2F; }
