@@ -1,607 +1,171 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ocho Loco - Crazy Eights</title>
-  <style>
-    :root {
-      --bg-gradient: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      --board-bg: #112d32;
-      --card-border: #254e58;
-      --accent-teal: #4fe0b6;
-      --accent-hover: #36b893;
-      --text-light: #e0f2f1;
-      --card-white: #f8fafc;
-      --danger-color: #ff6b6b;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      background: var(--bg-gradient);
-      color: var(--text-light);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .game-container {
-      width: 100%;
-      max-width: 900px;
-      background: rgba(17, 45, 50, 0.85);
-      border: 2px solid var(--card-border);
-      border-radius: 16px;
-      box-shadow: 0 12px 32px rgba(0,0,0,0.5);
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      position: relative;
-    }
-
-    .header-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--card-border);
-      padding-bottom: 12px;
-    }
-
-    .header-bar h1 {
-      font-size: 1.6rem;
-      color: var(--accent-teal);
-    }
-
-    /* Tablero y Áreas de Juego */
-    .play-area {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      min-height: 180px;
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 12px;
-      padding: 16px;
-    }
-
-    .deck-zone, .discard-zone {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .zone-label {
-      font-size: 0.85rem;
-      color: #88d49e;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    /* Estilo de las Cartas */
-    .card {
-      width: 75px;
-      height: 110px;
-      background: var(--card-white);
-      border-radius: 8px;
-      border: 2px solid #ccc;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 6px;
-      font-weight: bold;
-      font-size: 1.1rem;
-      cursor: pointer;
-      user-select: none;
-      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-      position: relative;
-    }
-
-    .card.red { color: #d63031; }
-    .card.black { color: #2d3436; }
-
-    .card.back {
-      background: linear-gradient(135deg, #1b4965, #62b6cb);
-      border: 2px solid #fff;
-    }
-
-    .card.selected {
-      transform: translateY(-12px);
-      border: 3px solid var(--accent-teal);
-      box-shadow: 0 0 12px var(--accent-teal);
-    }
-
-    .card.disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .card .suit-center {
-      font-size: 1.8rem;
-      align-self: center;
-    }
-
-    /* Manos de los Jugadores */
-    .hand-container {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .hand-label {
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    .cards-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      min-height: 120px;
-      align-items: center;
-    }
-
-    /* Panel de Estado y Mensajes */
-    .status-banner {
-      background: rgba(79, 224, 182, 0.15);
-      border-left: 4px solid var(--accent-teal);
-      padding: 10px 16px;
-      font-size: 0.95rem;
-      border-radius: 4px;
-    }
-
-    /* Botones de Control */
-    .controls {
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-    }
-
-    .btn {
-      background: var(--accent-teal);
-      color: #0f2027;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-    }
-
-    .btn:hover:not(:disabled) {
-      background: var(--accent-hover);
-      transform: translateY(-2px);
-    }
-
-    .btn:disabled {
-      background: #4a6572;
-      color: #888;
-      cursor: not-allowed;
-    }
-
-    /* Modal Elección de Palo */
-    .modal-overlay {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.75);
-      border-radius: 16px;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 10;
-    }
-
-    .modal-content {
-      background: var(--board-bg);
-      border: 2px solid var(--accent-teal);
-      padding: 24px;
-      border-radius: 12px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .suit-options {
-      display: flex;
-      gap: 12px;
-    }
-
-    .suit-btn {
-      font-size: 2rem;
-      width: 60px;
-      height: 60px;
-      border-radius: 8px;
-      border: 1px solid #fff;
-      background: #fff;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .suit-btn:hover {
-      transform: scale(1.1);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Press Start: Portal de Juegos</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<div class="game-container">
-  <div class="header-bar">
-    <h1>Ocho Loco (Crazy Eights)</h1>
-    <button class="btn" onclick="initGame()">Nueva Partida</button>
-  </div>
-
-  <!-- Estado del Bot -->
-  <div class="hand-container">
-    <div class="hand-label">Rival (Oponente) - Cartas: <span id="bot-count">0</span></div>
-    <div class="cards-row" id="bot-hand"></div>
-  </div>
-
-  <!-- Zona Central de Juego -->
-  <div class="play-area">
-    <div class="deck-zone">
-      <span class="zone-label">Mazo (<span id="deck-count">0</span>)</span>
-      <div class="card back" id="deck-card" onclick="drawCardUser()"></div>
+    <!-- MENÚ DE SELECCIÓN INICIAL -->
+    <div id="game-selector-screen" class="selector-container">
+        <h1>PRESS START: SELECCIONA UN JUEGO</h1>
+        <p>Elige la experiencia interactiva que deseas jugar:</p>
+        <div class="selector-buttons">
+            <button class="btn-selector" onclick="selectGame('dice')">🎲 DEVIL DICE (DADOS)</button>
+            <button class="btn-selector" onclick="selectGame('crescent')">🃏 CRESCENT SOLITAIRE (CARTAS)</button>
+            <button class="btn-selector" onclick="selectGame('crazyeights')">🎴 OCHO LOCO (CRAZY EIGHTS)</button>
+        </div>
     </div>
 
-    <div class="discard-zone">
-      <span class="zone-label">Mesa (Palo actual: <span id="current-suit-display">-</span>)</span>
-      <div id="top-card-container"></div>
+    <!-- JUEGO 1: DADOS (DEVIL DICE) -->
+    <div id="dice-game-section" class="game-section hidden">
+        <button class="btn-back" onclick="showSelector()">← Volver a la selección</button>
+        <header>
+            <h1>PRESS START: DADOS Y CONSUMO</h1>
+            <p class="sub">Consigue los 4 combos para desbloquear hallazgos académicos</p>
+        </header>
+
+        <main class="game-board">
+            <section class="panel score-panel">
+                <h2>COMBOS OBLIGATORIOS</h2>
+                <div class="combo-card" id="card-trio">
+                    <div class="combo-info"><strong>1. Trío (3 iguales)</strong></div>
+                    <button class="btn-claim" onclick="claimCombo('trio')">Validar</button>
+                </div>
+                <div class="combo-card" id="card-full">
+                    <div class="combo-info"><strong>2. Full House (3 + 2)</strong></div>
+                    <button class="btn-claim" onclick="claimCombo('full')">Validar</button>
+                </div>
+                <div class="combo-card" id="card-straight">
+                    <div class="combo-info"><strong>3. Escalera (4 consecutivos)</strong></div>
+                    <button class="btn-claim" onclick="claimCombo('straight')">Validar</button>
+                </div>
+                <div class="combo-card" id="card-generala">
+                    <div class="combo-info"><strong>4. Cinco Iguales (5 iguales)</strong></div>
+                    <button class="btn-claim" onclick="claimCombo('generala')">Validar</button>
+                </div>
+                <div class="turn-tracker">TURNOS RESTANTES: <span id="turns-left">10</span></div>
+            </section>
+
+            <section class="panel dice-panel">
+                <h2>MESA DE DADOS</h2>
+                <div class="dice-container" id="dice-container">
+                    <div class="die" data-index="0" onclick="toggleHold(0)">?</div>
+                    <div class="die" data-index="1" onclick="toggleHold(1)">?</div>
+                    <div class="die" data-index="2" onclick="toggleHold(2)">?</div>
+                    <div class="die" data-index="3" onclick="toggleHold(3)">?</div>
+                    <div class="die" data-index="4" onclick="toggleHold(4)">?</div>
+                </div>
+                <div class="controls">
+                    <button id="btn-roll" class="btn-primary" onclick="rollDice()">LANZAR DADOS 🎲</button>
+                </div>
+                <div id="game-message" class="message">¡Lanza los dados para comenzar!</div>
+            </section>
+        </main>
     </div>
-  </div>
 
-  <!-- Banner Informativo -->
-  <div class="status-banner" id="status-msg">Iniciando el juego...</div>
+    <!-- JUEGO 2: CRESCENT SOLITAIRE -->
+    <div id="crescent-game-section" class="game-section hidden">
+        <button class="btn-back" onclick="showSelector()">← Volver a la selección</button>
+        <header>
+            <h1>CRESCENT SOLITAIRE</h1>
+            <p class="sub">Completa las 8 bases centrales para desbloquear el video del proyecto</p>
+        </header>
 
-  <!-- Mano del Usuario -->
-  <div class="hand-container">
-    <div class="hand-label">Tu Mano</div>
-    <div class="cards-row" id="user-hand"></div>
-  </div>
+        <div class="crescent-board">
+            <div class="foundations-container">
+                <div class="foundation-row">
+                    <div class="card-slot foundation" id="f-top-0" onclick="placeOnFoundation('top', 0)">K</div>
+                    <div class="card-slot foundation" id="f-top-1" onclick="placeOnFoundation('top', 1)">K</div>
+                    <div class="card-slot foundation" id="f-top-2" onclick="placeOnFoundation('top', 2)">K</div>
+                    <div class="card-slot foundation" id="f-top-3" onclick="placeOnFoundation('top', 3)">K</div>
+                </div>
+                <div class="foundation-row">
+                    <div class="card-slot foundation" id="f-bot-0" onclick="placeOnFoundation('bot', 0)">A</div>
+                    <div class="card-slot foundation" id="f-bot-1" onclick="placeOnFoundation('bot', 1)">A</div>
+                    <div class="card-slot foundation" id="f-bot-2" onclick="placeOnFoundation('bot', 2)">A</div>
+                    <div class="card-slot foundation" id="f-bot-3" onclick="placeOnFoundation('bot', 3)">A</div>
+                </div>
+                <div class="controls-crescent">
+                    <button id="btn-shuffle" class="btn-primary" onclick="shuffleCrescent()">BARAJAR (Quedan: <span id="shuffles-left">6</span>)</button>
+                </div>
+            </div>
 
-  <!-- Controles del Jugador -->
-  <div class="controls">
-    <button class="btn" id="play-btn" onclick="playSelectedCards()" disabled>Play (Confirmar)</button>
-    <button class="btn" id="pass-btn" onclick="passTurn()" disabled>Pasar Turno</button>
-  </div>
-
-  <!-- Modal Comodín (Ocho) -->
-  <div class="modal-overlay" id="suit-modal">
-    <div class="modal-content">
-      <h2>Elige el nuevo palo:</h2>
-      <div class="suit-options">
-        <button class="suit-btn" style="color: black;" onclick="selectSuit('♠')">♠</button>
-        <button class="suit-btn" style="color: black;" onclick="selectSuit('♣')">♣</button>
-        <button class="suit-btn" style="color: red;" onclick="selectSuit('♥')">♥</button>
-        <button class="suit-btn" style="color: red;" onclick="selectSuit('♦')">♦</button>
-      </div>
+            <div class="outer-piles-grid" id="outer-piles-container"></div>
+        </div>
     </div>
-  </div>
-</div>
 
-<script>
-  const SUITS = ['♠', '♣', '♥', '♦'];
-  const VALUES = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    <!-- JUEGO 3: OCHO LOCO (CRAZY EIGHTS) -->
+    <div id="crazyeights-game-section" class="game-section hidden">
+        <button class="btn-back" onclick="showSelector()">← Volver a la selección</button>
+        <header>
+            <h1>OCHO LOCO (CRAZY EIGHTS)</h1>
+            <p class="sub">Descarta toda tu mano antes que la IA</p>
+        </header>
 
-  let deck = [];
-  let userHand = [];
-  let botHand = [];
-  let discardPile = [];
-  let currentSuit = '';
-  let selectedIndices = [];
-  let drawnThisTurn = 0;
-  let isUserTurn = true;
-  let isGameOver = false;
+        <div class="crazyeights-board panel">
+            <!-- Mano Rival -->
+            <div class="hand-container">
+                <div class="hand-label">OPONENTE (IA) - CARTAS: <span id="bot-count">0</span></div>
+                <div class="cards-row" id="bot-hand"></div>
+            </div>
 
-  function createDeck() {
-    deck = [];
-    for (let s of SUITS) {
-      for (let v of VALUES) {
-        deck.push({ suit: s, value: v });
-      }
-    }
-    // Mezclar
-    for (let i = deck.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [deck[i], deck[j]] = [deck[j], deck[i]];
-    }
-  }
+            <!-- Zona Central -->
+            <div class="play-area-ce">
+                <div class="deck-zone-ce">
+                    <span class="zone-label">MAZO (<span id="deck-count">0</span>)</span>
+                    <div class="ce-card back" id="deck-card" onclick="drawCardUser()"></div>
+                </div>
 
-  function initGame() {
-    createDeck();
-    userHand = [];
-    botHand = [];
-    discardPile = [];
-    selectedIndices = [];
-    drawnThisTurn = 0;
-    isUserTurn = true;
-    isGameOver = false;
+                <div class="discard-zone-ce">
+                    <span class="zone-label">MESA (PALO: <span id="current-suit-display" class="suit-highlight">-</span>)</span>
+                    <div id="top-card-container"></div>
+                </div>
+            </div>
 
-    // Repartir 7 cartas a cada uno
-    for (let i = 0; i < 7; i++) {
-      userHand.push(deck.pop());
-      botHand.push(deck.pop());
-    }
+            <!-- Estado y Mensajes -->
+            <div id="ce-status-msg" class="message ce-banner">Iniciando el juego...</div>
 
-    // Primera carta a la mesa
-    let top = deck.pop();
-    discardPile.push(top);
-    currentSuit = top.suit;
+            <!-- Mano del Jugador -->
+            <div class="hand-container">
+                <div class="hand-label">TU MANO</div>
+                <div class="cards-row" id="user-hand"></div>
+            </div>
 
-    // Si la primera carta es un 8, se activa inicio especial
-    if (top.value === '8') {
-      setStatus("¡Inicio Especial! La carta inicial es un 8. Puedes tirar cualquier carta.");
-    } else {
-      setStatus("Tu turno. Selecciona una carta compatible o roba si no tienes jugadas.");
-    }
+            <!-- Botones -->
+            <div class="controls-ce">
+                <button class="btn-primary" id="ce-play-btn" onclick="playSelectedCards()" disabled>CONFIRMAR JUGADA</button>
+                <button class="btn-primary btn-alt" id="ce-pass-btn" onclick="passTurn()" disabled>PASAR TURNO</button>
+                <button class="btn-primary btn-alt" onclick="initCrazyEightsGame()">REINICIAR</button>
+            </div>
+        </div>
+    </div>
 
-    updateUI();
-  }
+    <!-- MODAL POPUP GENERAL -->
+    <div id="info-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title">¡INFORMACIÓN!</h2>
+            <div id="modal-body"></div>
+        </div>
+    </div>
 
-  function setStatus(msg) {
-    document.getElementById('status-msg').innerText = msg;
-  }
+    <!-- MODAL ELECCIÓN DE PALO (OCHO LOCO) -->
+    <div class="modal hidden" id="suit-modal">
+        <div class="modal-content">
+            <h2>ELIGE UN NUEVO PALO</h2>
+            <div class="suit-options">
+                <button class="suit-btn black" onclick="selectSuit('♠')">♠</button>
+                <button class="suit-btn black" onclick="selectSuit('♣')">♣</button>
+                <button class="suit-btn red" onclick="selectSuit('♥')">♥</button>
+                <button class="suit-btn red" onclick="selectSuit('♦')">♦</button>
+            </div>
+        </div>
+    </div>
 
-  function renderCardHTML(card, isBack = false) {
-    if (isBack) return `<div class="card back"></div>`;
-    const isRed = card.suit === '♥' || card.suit === '♦';
-    return `
-      <div class="card ${isRed ? 'red' : 'black'}">
-        <div>${card.value}</div>
-        <div class="suit-center">${card.suit}</div>
-        <div style="align-self: flex-end;">${card.value}</div>
-      </div>
-    `;
-  }
-
-  function updateUI() {
-    // Actualizar Mazo y Mesa
-    document.getElementById('deck-count').innerText = deck.length;
-    const topCard = discardPile[discardPile.length - 1];
-    document.getElementById('top-card-container').innerHTML = renderCardHTML(topCard);
-    document.getElementById('current-suit-display').innerText = currentSuit;
-
-    // Mano Bot
-    document.getElementById('bot-count').innerText = botHand.length;
-    const botContainer = document.getElementById('bot-hand');
-    botContainer.innerHTML = botHand.map(() => renderCardHTML(null, true)).join('');
-
-    // Mano Usuario
-    const userContainer = document.getElementById('user-hand');
-    userContainer.innerHTML = '';
-    userHand.forEach((card, index) => {
-      const cardDiv = document.createElement('div');
-      cardDiv.innerHTML = renderCardHTML(card);
-      const child = cardDiv.firstElementChild;
-      
-      if (selectedIndices.includes(index)) {
-        child.classList.add('selected');
-      }
-
-      child.onclick = () => handleCardClick(index);
-      userContainer.appendChild(child);
-    });
-
-    // Estado Botones
-    document.getElementById('play-btn').disabled = selectedIndices.length === 0 || !isUserTurn;
-    document.getElementById('pass-btn').disabled = !(isUserTurn && drawnThisTurn === 3 && !hasPlayableCard(userHand));
-  }
-
-  function hasPlayableCard(hand) {
-    const topCard = discardPile[discardPile.length - 1];
-    // Inicio especial con 8 en mesa
-    if (discardPile.length === 1 && topCard.value === '8') return hand.length > 0;
-
-    return hand.some(card => 
-      card.value === '8' || card.suit === currentSuit || card.value === topCard.value
-    );
-  }
-
-  function handleCardClick(index) {
-    if (!isUserTurn || isGameOver) return;
-
-    const card = userHand[index];
-    const topCard = discardPile[discardPile.length - 1];
-
-    // Primer carta elegida en el turno
-    if (selectedIndices.length === 0) {
-      const isSpecialStart = (discardPile.length === 1 && topCard.value === '8');
-      const isValidFirstCard = isSpecialStart || card.value === '8' || card.suit === currentSuit || card.value === topCard.value;
-
-      if (!isValidFirstCard) {
-        setStatus("No puedes jugar esa carta. Debe coincidir en palo o número.");
-        return;
-      }
-      selectedIndices.push(index);
-    } else {
-      // Siguientes cartas (Combo)
-      if (selectedIndices.includes(index)) {
-        // Deseleccionar si ya estaba
-        selectedIndices = selectedIndices.filter(i => i !== index);
-      } else {
-        const firstCard = userHand[selectedIndices[0]];
-        if (card.value === firstCard.value) {
-          selectedIndices.push(index);
-        } else {
-          setStatus("Para jugar un combo, todas las cartas deben ser del mismo número.");
-          return;
-        }
-      }
-    }
-    updateUI();
-  }
-
-  function drawCardUser() {
-    if (!isUserTurn || isGameOver) return;
-
-    if (hasPlayableCard(userHand)) {
-      setStatus("No puedes robar si tienes cartas jugables en tu mano.");
-      return;
-    }
-
-    if (drawnThisTurn >= 3) {
-      setStatus("Ya robaste 3 cartas. Si aún no puedes jugar, debes pasar el turno.");
-      return;
-    }
-
-    if (deck.length > 0) {
-      userHand.push(deck.pop());
-      drawnThisTurn++;
-      setStatus(`Has robado una carta (${drawnThisTurn}/3).`);
-      updateUI();
-    } else {
-      setStatus("El mazo se ha agotado.");
-    }
-  }
-
-  function playSelectedCards() {
-    if (selectedIndices.length === 0) return;
-
-    // Ordenar de mayor a menor índice para remover sin desfasar la lista
-    selectedIndices.sort((a, b) => b - a);
-    const playedCards = selectedIndices.map(i => userHand[i]);
-
-    // Remover de la mano
-    selectedIndices.forEach(i => userHand.splice(i, 1));
-    selectedIndices = [];
-
-    // Colocar en la mesa (la última jugada queda arriba)
-    playedCards.forEach(c => discardPile.push(c));
-    const lastPlayed = playedCards[playedCards.length - 1];
-
-    if (lastPlayed.value === '8') {
-      document.getElementById('suit-modal').style.display = 'flex';
-      return;
-    } else {
-      currentSuit = lastPlayed.suit;
-    }
-
-    checkWinCondition();
-    if (!isGameOver) endUserTurn();
-  }
-
-  function selectSuit(suit) {
-    currentSuit = suit;
-    document.getElementById('suit-modal').style.display = 'none';
-    setStatus(`Cambiaste el palo a ${suit}.`);
-    checkWinCondition();
-    if (!isGameOver) endUserTurn();
-  }
-
-  function passTurn() {
-    if (!isUserTurn) return;
-    setStatus("Has pasado el turno.");
-    endUserTurn();
-  }
-
-  function endUserTurn() {
-    isUserTurn = false;
-    drawnThisTurn = 0;
-    updateUI();
-    setTimeout(botTurn, 1200);
-  }
-
-  /* Inteligencia Artificial del Rival */
-  function botTurn() {
-    if (isGameOver) return;
-    setStatus("Turno del rival pensando...");
-
-    let topCard = discardPile[discardPile.length - 1];
-    let botDrawn = 0;
-
-    // Buscar jugadas posibles
-    let validMoves = getValidBotMoves();
-
-    // Robar si no tiene jugadas
-    while (validMoves.length === 0 && botDrawn < 3 && deck.length > 0) {
-      botHand.push(deck.pop());
-      botDrawn++;
-      validMoves = getValidBotMoves();
-    }
-
-    if (validMoves.length > 0) {
-      // Estrategia: priorizar jugar combos o cartas normales antes del 8
-      let chosenMove = validMoves.find(m => m[0].value !== '8') || validMoves[0];
-
-      chosenMove.forEach(card => {
-        const idx = botHand.indexOf(card);
-        botHand.splice(idx, 1);
-        discardPile.push(card);
-      });
-
-      const lastPlayed = chosenMove[chosenMove.length - 1];
-      if (lastPlayed.value === '8') {
-        // Elegir el palo más frecuente en la mano del bot
-        currentSuit = getBestSuitForBot();
-        setStatus(`El rival jugó un 8 y cambió el palo a ${currentSuit}.`);
-      } else {
-        currentSuit = lastPlayed.suit;
-        setStatus(`El rival jugó ${chosenMove.length} carta(s).`);
-      }
-    } else {
-      setStatus("El rival no pudo jugar y pasó turno.");
-    }
-
-    checkWinCondition();
-    if (!isGameOver) {
-      isUserTurn = true;
-      drawnThisTurn = 0;
-      updateUI();
-    }
-  }
-
-  function getValidBotMoves() {
-    const topCard = discardPile[discardPile.length - 1];
-    const isSpecialStart = (discardPile.length === 1 && topCard.value === '8');
-    let moves = [];
-
-    // Agrupar mano por valores para combos
-    let valueGroups = {};
-    botHand.forEach(c => {
-      if (!valueGroups[c.value]) valueGroups[c.value] = [];
-      valueGroups[c.value].push(c);
-    });
-
-    botHand.forEach(card => {
-      const isValid = isSpecialStart || card.value === '8' || card.suit === currentSuit || card.value === topCard.value;
-      if (isValid) {
-        // Añadir combo si existe
-        let sameValueCards = valueGroups[card.value];
-        moves.push(sameValueCards);
-      }
-    });
-
-    return moves;
-  }
-
-  function getBestSuitForBot() {
-    let counts = { '♠': 0, '♣': 0, '♥': 0, '♦': 0 };
-    botHand.forEach(c => counts[c.suit]++);
-    return Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
-  }
-
-  function checkWinCondition() {
-    if (userHand.length === 0) {
-      setStatus("¡Felicidades! Has ganado la partida. 🎉");
-      isGameOver = true;
-    } else if (botHand.length === 0) {
-      setStatus("El rival se ha quedado sin cartas. ¡Has perdido! 🤖");
-      isGameOver = true;
-    }
-    updateUI();
-  }
-
-  // Iniciar al cargar
-  initGame();
-</script>
+    <script src="script.js"></script>
 </body>
 </html>
