@@ -382,243 +382,253 @@ function initCrazyEightsGame() {
     if (top.value === '8') {
         setCEStatus("¡INICIO ESPECIAL! La carta inicial es un 8. Puedes tirar cualquier carta.");
     } else {
-        setCEStatus("Tu turno. Selecciona una carta compatible o roba si no tienes jugadas.");
+        setCEStatus("¡Juego iniciado! Es tu turno.");
     }
 
-    updateCEUI();
+    renderCrazyEightsBoard();
 }
 
 function setCEStatus(msg) {
-    document.getElementById('ce-status-msg').innerText = msg;
+    const el = document.getElementById('ce-status-msg');
+    if (el) el.innerText = msg;
 }
 
-function renderCECardHTML(card, isBack = false) {
-    if (isBack) return `<div class="ce-card back"></div>`;
-    const isRed = ['♥', '♦'].includes(card.suit);
-    return `
-      <div class="ce-card ${isRed ? 'red' : 'black'}">
-        <div>${card.value}</div>
-        <div class="suit-center">${card.suit}</div>
-        <div style="align-self: flex-end;">${card.value}</div>
-      </div>
-    `;
-}
-
-function updateCEUI() {
+function renderCrazyEightsBoard() {
+    // Actualizar Mazo y Contadores
     document.getElementById('deck-count').innerText = ceDeck.length;
-    const topCard = ceDiscardPile[ceDiscardPile.length - 1];
-    document.getElementById('top-card-container').innerHTML = renderCECardHTML(topCard);
+    document.getElementById('bot-count').innerText = ceBotHand.length;
     document.getElementById('current-suit-display').innerText = ceCurrentSuit;
 
-    document.getElementById('bot-count').innerText = ceBotHand.length;
-    const botContainer = document.getElementById('bot-hand');
-    botContainer.innerHTML = ceBotHand.map(() => renderCECardHTML(null, true)).join('');
-
-    const userContainer = document.getElementById('user-hand');
-    userContainer.innerHTML = '';
-    ceUserHand.forEach((card, index) => {
+    // Mano Bot (cartas boca abajo)
+    const botHandEl = document.getElementById('bot-hand');
+    botHandEl.innerHTML = '';
+    ceBotHand.forEach(() => {
         const cardDiv = document.createElement('div');
-        cardDiv.innerHTML = renderCECardHTML(card);
-        const child = cardDiv.firstElementChild;
-
-        if (ceSelectedIndices.includes(index)) {
-            child.classList.add('selected');
-        }
-
-        child.onclick = () => handleCECardClick(index);
-        userContainer.appendChild(child);
+        cardDiv.className = 'ce-card back';
+        botHandEl.appendChild(cardDiv);
     });
 
-    document.getElementById('ce-play-btn').disabled = ceSelectedIndices.length === 0 || !ceIsUserTurn;
-    document.getElementById('ce-pass-btn').disabled = !(ceIsUserTurn && ceDrawnThisTurn === 3 && !hasPlayableCECard(ceUserHand));
-}
+    // Carta Superior del Mazo de Descarte
+    const topCardContainer = document.getElementById('top-card-container');
+    topCardContainer.innerHTML = '';
+    if (ceDiscardPile.length > 0) {
+        const topCard = ceDiscardPile[ceDiscardPile.length - 1];
+        topCardContainer.appendChild(createCardElement(topCard));
+    }
 
-function hasPlayableCECard(hand) {
-    const topCard = ceDiscardPile[ceDiscardPile.length - 1];
-    if (ceDiscardPile.length === 1 && topCard.value === '8') return hand.length > 0;
-
-    return hand.some(card => 
-        card.value === '8' || card.suit === ceCurrentSuit || card.value === topCard.value
-    );
-}
-
-function handleCECardClick(index) {
-    if (!ceIsUserTurn || ceIsGameOver) return;
-
-    const card = ceUserHand[index];
-    const topCard = ceDiscardPile[ceDiscardPile.length - 1];
-
-    if (ceSelectedIndices.length === 0) {
-        const isSpecialStart = (ceDiscardPile.length === 1 && topCard.value === '8');
-        const isValidFirstCard = isSpecialStart || card.value === '8' || card.suit === ceCurrentSuit || card.value === topCard.value;
-
-        if (!isValidFirstCard) {
-            setCEStatus("No puedes jugar esa carta. Debe coincidir en palo o número.");
-            return;
-        }
-        ceSelectedIndices.push(index);
-    } else {
+    // Mano del Usuario
+    const userHandEl = document.getElementById('user-hand');
+    userHandEl.innerHTML = '';
+    ceUserHand.forEach((card, index) => {
+        const cardEl = createCardElement(card);
         if (ceSelectedIndices.includes(index)) {
-            ceSelectedIndices = ceSelectedIndices.filter(i => i !== index);
-        } else {
-            const firstCard = ceUserHand[ceSelectedIndices[0]];
-            if (card.value === firstCard.value) {
-                ceSelectedIndices.push(index);
-            } else {
-                setCEStatus("Para jugar un combo, todas las cartas deben ser del mismo número.");
-                return;
-            }
+            cardEl.classList.add('selected');
         }
-    }
-    updateCEUI();
+        cardEl.onclick = () => toggleSelectUserCard(index);
+        userHandEl.appendChild(cardEl);
+    });
+
+    // Botones de acción
+    const playBtn = document.getElementById('ce-play-btn');
+    const passBtn = document.getElementById('ce-pass-btn');
+
+    playBtn.disabled = !ceIsUserTurn || ceSelectedIndices.length === 0 || ceIsGameOver;
+    passBtn.disabled = !ceIsUserTurn || ceDrawnThisTurn === 0 || ceIsGameOver;
 }
 
-function drawCardUser() {
+function createCardElement(card) {
+    const cardDiv = document.createElement('div');
+    const isRed = ['♥', '♦'].includes(card.suit);
+    cardDiv.className = `ce-card ${isRed ? 'red' : 'black'}`;
+    
+    cardDiv.innerHTML = `
+        <div>${card.value}</div>
+        <div class="suit-center">${card.suit}</div>
+        <div style="text-align: right;">${card.value}</div>
+    `;
+    return cardDiv;
+}
+
+function toggleSelectUserCard(index) {
     if (!ceIsUserTurn || ceIsGameOver) return;
 
-    if (hasPlayableCECard(ceUserHand)) {
-        setCEStatus("No puedes robar si tienes cartas jugables en tu mano.");
-        return;
-    }
-
-    if (ceDrawnThisTurn >= 3) {
-        setCEStatus("Ya robaste 3 cartas. Si aún no puedes jugar, debes pasar el turno.");
-        return;
-    }
-
-    if (ceDeck.length > 0) {
-        ceUserHand.push(ceDeck.pop());
-        ceDrawnThisTurn++;
-        setCEStatus(`Has robado una carta (${ceDrawnThisTurn}/3).`);
-        updateCEUI();
+    const pos = ceSelectedIndices.indexOf(index);
+    if (pos > -1) {
+        ceSelectedIndices.splice(pos, 1);
     } else {
-        setCEStatus("El mazo se ha agotado.");
+        if (ceSelectedIndices.length > 0) {
+            const firstCard = ceUserHand[ceSelectedIndices[0]];
+            const currentCard = ceUserHand[index];
+            if (firstCard.value !== currentCard.value) {
+                ceSelectedIndices = [index];
+            } else {
+                ceSelectedIndices.push(index);
+            }
+        } else {
+            ceSelectedIndices.push(index);
+        }
     }
+    renderCrazyEightsBoard();
 }
 
 function playSelectedCards() {
-    if (ceSelectedIndices.length === 0) return;
+    if (!ceIsUserTurn || ceSelectedIndices.length === 0 || ceIsGameOver) return;
 
-    ceSelectedIndices.sort((a, b) => b - a);
-    const playedCards = ceSelectedIndices.map(i => ceUserHand[i]);
+    const cardsToPlay = ceSelectedIndices.map(i => ceUserHand[i]);
+    const firstCard = cardsToPlay[0];
+    const topCard = ceDiscardPile[ceDiscardPile.length - 1];
 
-    ceSelectedIndices.forEach(i => ceUserHand.splice(i, 1));
+    const isValidMove = (firstCard.value === '8') || 
+                        (firstCard.suit === ceCurrentSuit) || 
+                        (firstCard.value === topCard.value);
+
+    if (!isValidMove) {
+        setCEStatus("Jugada inválida. Debes coincidir con el palo o el valor, o jugar un 8.");
+        return;
+    }
+
+    // Remover cartas de la mano del usuario
+    ceSelectedIndices.sort((a, b) => b - a).forEach(i => {
+        ceUserHand.splice(i, 1);
+    });
+
+    cardsToPlay.forEach(c => ceDiscardPile.push(c));
     ceSelectedIndices = [];
+    ceDrawnThisTurn = 0;
 
-    playedCards.forEach(c => ceDiscardPile.push(c));
-    const lastPlayed = playedCards[playedCards.length - 1];
+    const lastPlayed = cardsToPlay[cardsToPlay.length - 1];
 
     if (lastPlayed.value === '8') {
         document.getElementById('suit-modal').classList.remove('hidden');
+        renderCrazyEightsBoard();
         return;
     } else {
         ceCurrentSuit = lastPlayed.suit;
     }
 
-    checkCEWinCondition();
-    if (!ceIsGameOver) endUserTurn();
+    if (checkCrazyEightsWin()) return;
+
+    ceIsUserTurn = false;
+    setCEStatus("Turno del Oponente (IA)...");
+    renderCrazyEightsBoard();
+    setTimeout(botTurn, 1200);
 }
 
 function selectSuit(suit) {
     ceCurrentSuit = suit;
     document.getElementById('suit-modal').classList.add('hidden');
-    setCEStatus(`Cambiaste el palo a ${suit}.`);
-    checkCEWinCondition();
-    if (!ceIsGameOver) endUserTurn();
+
+    if (checkCrazyEightsWin()) return;
+
+    ceIsUserTurn = false;
+    setCEStatus(`Cambiaste el palo a ${suit}. Turno de la IA...`);
+    renderCrazyEightsBoard();
+    setTimeout(botTurn, 1200);
+}
+
+function drawCardUser() {
+    if (!ceIsUserTurn || ceIsGameOver) return;
+
+    if (ceDeck.length === 0) {
+        setCEStatus("El mazo está vacío. Si no puedes jugar, pasa tu turno.");
+        return;
+    }
+
+    const drawnCard = ceDeck.pop();
+    ceUserHand.push(drawnCard);
+    ceDrawnThisTurn++;
+    setCEStatus(`Robaste: ${drawnCard.value} de ${drawnCard.suit}`);
+    renderCrazyEightsBoard();
 }
 
 function passTurn() {
-    if (!ceIsUserTurn) return;
-    setCEStatus("Has pasado el turno.");
-    endUserTurn();
-}
+    if (!ceIsUserTurn || ceDrawnThisTurn === 0 || ceIsGameOver) return;
 
-function endUserTurn() {
-    ceIsUserTurn = false;
+    ceSelectedIndices = [];
     ceDrawnThisTurn = 0;
-    updateCEUI();
-    setTimeout(botTurn, 1000);
+    ceIsUserTurn = false;
+    setCEStatus("Pasaste el turno. Le toca a la IA.");
+    renderCrazyEightsBoard();
+    setTimeout(botTurn, 1200);
 }
 
 function botTurn() {
     if (ceIsGameOver) return;
-    setCEStatus("Turno del rival pensando...");
 
-    let topCard = ceDiscardPile[ceDiscardPile.length - 1];
-    let botDrawn = 0;
-
-    let validMoves = getValidBotMoves();
-
-    while (validMoves.length === 0 && botDrawn < 3 && ceDeck.length > 0) {
-        ceBotHand.push(ceDeck.pop());
-        botDrawn++;
-        validMoves = getValidBotMoves();
-    }
-
-    if (validMoves.length > 0) {
-        let chosenMove = validMoves.find(m => m[0].value !== '8') || validMoves[0];
-
-        chosenMove.forEach(card => {
-            const idx = ceBotHand.indexOf(card);
-            ceBotHand.splice(idx, 1);
-            ceDiscardPile.push(card);
-        });
-
-        const lastPlayed = chosenMove[chosenMove.length - 1];
-        if (lastPlayed.value === '8') {
-            ceCurrentSuit = getBestSuitForBot();
-            setCEStatus(`El rival jugó un 8 y cambió el palo a ${ceCurrentSuit}.`);
-        } else {
-            ceCurrentSuit = lastPlayed.suit;
-            setCEStatus(`El rival jugó ${chosenMove.length} carta(s).`);
-        }
-    } else {
-        setCEStatus("El rival no pudo jugar y pasó turno.");
-    }
-
-    checkCEWinCondition();
-    if (!ceIsGameOver) {
-        ceIsUserTurn = true;
-        ceDrawnThisTurn = 0;
-        updateCEUI();
-    }
-}
-
-function getValidBotMoves() {
     const topCard = ceDiscardPile[ceDiscardPile.length - 1];
-    const isSpecialStart = (ceDiscardPile.length === 1 && topCard.value === '8');
-    let moves = [];
 
-    let valueGroups = {};
-    ceBotHand.forEach(c => {
-        if (!valueGroups[c.value]) valueGroups[c.value] = [];
-        valueGroups[c.value].push(c);
-    });
-
-    ceBotHand.forEach(card => {
-        const isValid = isSpecialStart || card.value === '8' || card.suit === ceCurrentSuit || card.value === topCard.value;
-        if (isValid) {
-            let sameValueCards = valueGroups[card.value];
-            moves.push(sameValueCards);
+    // Buscar jugada de la IA
+    let validIndices = [];
+    ceBotHand.forEach((card, idx) => {
+        if (card.value === '8' || card.suit === ceCurrentSuit || card.value === topCard.value) {
+            validIndices.push(idx);
         }
     });
 
-    return moves;
-}
+    if (validIndices.length > 0) {
+        // Preferir cartas que no sean 8
+        let nonEight = validIndices.find(i => ceBotHand[i].value !== '8');
+        let playIndex = (nonEight !== undefined) ? nonEight : validIndices[0];
 
-function getBestSuitForBot() {
-    let counts = { '♠': 0, '♣': 0, '♥': 0, '♦': 0 };
-    ceBotHand.forEach(c => counts[c.suit]++);
-    return Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
-}
+        const playedCard = ceBotHand.splice(playIndex, 1)[0];
+        ceDiscardPile.push(playedCard);
 
-function checkCEWinCondition() {
-    if (ceUserHand.length === 0) {
-        setCEStatus("¡FELICIDADES! Has ganado la partida. 🎉");
-        ceIsGameOver = true;
-    } else if (ceBotHand.length === 0) {
-        setCEStatus("El rival se ha quedado sin cartas. ¡HA GANADO LA IA! 🤖");
-        ceIsGameOver = true;
+        if (playedCard.value === '8') {
+            // La IA elige el palo que más tenga en su mano
+            const suitCounts = { '♠': 0, '♥': 0, '♦': 0, '♣': 0 };
+            ceBotHand.forEach(c => suitCounts[c.suit]++);
+            let bestSuit = '♠';
+            let maxCount = -1;
+            for (let s in suitCounts) {
+                if (suitCounts[s] > maxCount) {
+                    maxCount = suitCounts[s];
+                    bestSuit = s;
+                }
+            }
+            ceCurrentSuit = bestSuit;
+            setCEStatus(`La IA jugó un 8 y cambió el palo a ${bestSuit}.`);
+        } else {
+            ceCurrentSuit = playedCard.suit;
+            setCEStatus(`La IA jugó: ${playedCard.value} de ${playedCard.suit}.`);
+        }
+
+        if (checkCrazyEightsWin()) return;
+
+    } else {
+        // La IA debe robar si no tiene jugada
+        if (ceDeck.length > 0) {
+            const drawn = ceDeck.pop();
+            ceBotHand.push(drawn);
+            setCEStatus("La IA no tenía jugada y robó una carta.");
+        } else {
+            setCEStatus("La IA no tiene jugadas y el mazo está vacío. Pasa turno.");
+        }
     }
+
+    ceIsUserTurn = true;
+    renderCrazyEightsBoard();
+}
+
+function checkCrazyEightsWin() {
+    if (ceUserHand.length === 0) {
+        ceIsGameOver = true;
+        setCEStatus("¡FELICITACIONES! Has ganado Ocho Loco.");
+        document.getElementById('modal-title').innerText = "¡VICTORIA EN OCHO LOCO!";
+        document.getElementById('modal-body').innerText = "¡Has logrado descartar toda tu mano antes que la IA!";
+        document.getElementById('info-modal').classList.remove('hidden');
+        return true;
+    }
+
+    if (ceBotHand.length === 0) {
+        ceIsGameOver = true;
+        setCEStatus("La IA ha ganado. ¡Inténtalo de nuevo!");
+        document.getElementById('modal-title').innerText = "¡DERROTA!";
+        document.getElementById('modal-body').innerText = "La IA descartó toda su mano primero.";
+        document.getElementById('info-modal').classList.remove('hidden');
+        return true;
+    }
+
+    return false;
+}
     updateCEUI();
 }
