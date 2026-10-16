@@ -1,76 +1,73 @@
 // ==========================================
-// SELECCIÓN DE PANTALLAS
+// 1. SELECCIÓN DE PANTALLAS (REGISTRADO PRIMERO)
 // ==========================================
 function selectGame(gameType) {
-    document.getElementById('game-selector-screen').classList.add('hidden');
-    if (gameType === 'dice') {
-        document.getElementById('dice-game-section').classList.remove('hidden');
-    } else if (gameType === 'crescent') {
-        document.getElementById('crescent-game-section').classList.remove('hidden');
-        initCrescentGame();
-    } else if (gameType === 'crazyeights') {
-        document.getElementById('crazyeights-game-section').classList.remove('hidden');
-        initCrazyEightsGame();
+    var selector = document.getElementById('game-selector-screen');
+    var diceSec = document.getElementById('dice-game-section');
+    var crescentSec = document.getElementById('crescent-game-section');
+    var crazySec = document.getElementById('crazyeights-game-section');
+
+    if (selector) selector.classList.add('hidden');
+
+    if (gameType === 'dice' && diceSec) {
+        diceSec.classList.remove('hidden');
+    } else if (gameType === 'crescent' && crescentSec) {
+        crescentSec.classList.remove('hidden');
+        if (typeof initCrescentGame === 'function') initCrescentGame();
+    } else if (gameType === 'crazyeights' && crazySec) {
+        crazySec.classList.remove('hidden');
+        if (typeof initCrazyEightsGame === 'function') initCrazyEightsGame();
     }
 }
 
 function showSelector() {
-    document.getElementById('dice-game-section').classList.add('hidden');
-    document.getElementById('crescent-game-section').classList.add('hidden');
-    document.getElementById('crazyeights-game-section').classList.add('hidden');
-    document.getElementById('game-selector-screen').classList.remove('hidden');
+    var selector = document.getElementById('game-selector-screen');
+    var diceSec = document.getElementById('dice-game-section');
+    var crescentSec = document.getElementById('crescent-game-section');
+    var crazySec = document.getElementById('crazyeights-game-section');
+
+    if (diceSec) diceSec.classList.add('hidden');
+    if (crescentSec) crescentSec.classList.add('hidden');
+    if (crazySec) crazySec.classList.add('hidden');
+    if (selector) selector.classList.remove('hidden');
 }
 
 // ==========================================
-// JUEGO 1: DEVIL DICE (DADOS)
+// 2. JUEGO 1: DEVIL DICE (DADOS)
 // ==========================================
-let diceValues = [1, 1, 1, 1, 1];
-let heldDice = [false, false, false, false, false];
-let turnsLeft = 10;
-let hasRolled = false;
+var diceValues = [1, 1, 1, 1, 1];
+var heldDice = [false, false, false, false, false];
+var turnsLeft = 10;
+var hasRolled = false;
 
-const combosCompleted = {
+var combosCompleted = {
     trio: false,
     full: false,
     straight: false,
     generala: false
 };
 
-const comboTitles = {
+var comboTitles = {
     trio: "INFOGRAFÍA 1: EVOLUCIÓN DEL MERCADO (2016-2026)",
     full: "INFOGRAFÍA 2: PERCEPCIÓN DE VALOR",
     straight: "INFOGRAFÍA 3: PATRONES DE COMPRA EN BOGOTÁ",
     generala: "INFOGRAFÍA 4: EL FENÓMENO DEL BACKLOG DIGITAL"
 };
 
-let academicFindings = [
-    "Hallazgo Académico: La desmaterialización en los videojuegos no responde solo a la preferencia del usuario, sino a una decisión estratégica de la industria para eliminar costos de manufactura, almacenamiento y logística física, ampliando el alcance global.",
-    "Hallazgo Académico: El factor de decisión más determinante para la adopción masiva del formato digital entre jóvenes de 20 a 30 años es la comodidad y la inmediatez de descarga, superando al precio y a la calidad percibida del producto.",
-    "Hallazgo Académico: La transición a licencias digitales ha cambiado la propiedad por una licencia de uso condicionado, donde la plataforma puede modificar, restringir o revocar el acceso al contenido de forma unilateral.",
-    "Hallazgo Académico: La satisfacción de uso, la disponibilidad inmediata y las funciones de juego en línea son predictores más sólidos de la intención de compra digital que la posesión del producto en sí.",
-    "Hallazgo Académico: El consumidor del formato digital pierde la facultad de prestar, revender o conservar de forma autónoma sus videojuegos, asumiendo una asimetría de poder estructural frente a las plataformas de distribución.",
-    "Hallazgo Académico: La desaparición del soporte físico elimina elementos simbólicos de alto valor afectivo para el usuario, como cajas impresas, portadas ilustradas, manuales y colecciones de ediciones especiales.",
-    "Hallazgo Académico: En contextos latinoamericanos como Bogotá, la transición digital enfrenta brechas particulares como el acceso limitado a medios de pago internacionales y niveles de conectividad desigual.",
-    "Hallazgo Académico: La existencia de mercados informales de videojuegos físicos en Bogotá actúa como una alternativa que aún sostiene la circulación del formato tangible frente a las tiendas digitales globales.",
-    "Hallazgo Académico: El mercado global de videojuegos generó $187.700 millones de dólares en 2023, donde el segmento digital y los servicios de suscripción fueron el motor principal de crecimiento sobre el formato físico.",
-    "Hallazgo Académico: El usuario mixto habita en una constante negociación entre el apego emocional a las ediciones físicas y la practicidad o rebajas del entorno digital.",
-    "Hallazgo Académico: La migración a catálogos digitales ha transformado el valor del videojuego: ya no depende de la tenencia del soporte, sino de las comunidades, servicios e interacciones de la plataforma.",
-    "Hallazgo Académico: En la población de 20 a 30 años en Bogotá, la primera generación testigo directo de la transición completa de soporte, la valoración del formato físico reaparece principalmente en títulos con fuerte valor nostálgico o afectivo.",
-    "Hallazgo Académico: Las plataformas de distribución por suscripción (como Game Pass y PS Plus) han desplazado la compra individual de títulos hacia el consumo de catálogos rotativos bajo pago recurrente.",
-    "Hallazgo Académico: El gasto en contenido digital a nivel global ha llevado a las ventas físicas a representar una fracción marginal del mercado global de entretenimiento interactivo.",
-    "Hallazgo Académico: Las decisiones de compra en entornos digitales están altamente condicionadas por eventos de oferta temporal, impulsando compras no planificadas de licencias.",
-    "Hallazgo Académico: La desmaterialización del consumo cultural modifica la relación económica del usuario, transitando del concepto tradicional de comprador de bienes al de suscriptor de servicios."
+var academicFindings = [
+    "Hallazgo Académico: La desmaterialización en los videojuegos responde a una decisión estratégica de la industria para eliminar costos de manufactura y distribución.",
+    "Hallazgo Académico: El factor decisivo para el formato digital es la comodidad e inmediatez de descarga.",
+    "Hallazgo Académico: Las licencias digitales cambian la propiedad por un derecho de uso condicionado.",
+    "Hallazgo Académico: La disponibilidad inmediata es un predictor sólido de la intención de compra."
 ];
 
 function rollDice() {
     if (turnsLeft <= 0) return;
-
-    for (let i = 0; i < 5; i++) {
+    for (var i = 0; i < 5; i++) {
         if (!heldDice[i]) {
             diceValues[i] = Math.floor(Math.random() * 6) + 1;
         }
     }
-
     turnsLeft--;
     hasRolled = true;
     updateDiceUI();
@@ -83,10 +80,11 @@ function toggleHold(index) {
 }
 
 function updateDiceUI() {
-    document.getElementById('turns-left').innerText = turnsLeft;
-    
-    const diceElements = document.querySelectorAll('.die');
-    diceElements.forEach((el, index) => {
+    var turnsEl = document.getElementById('turns-left');
+    if (turnsEl) turnsEl.innerText = turnsLeft;
+
+    var diceElements = document.querySelectorAll('.die');
+    diceElements.forEach(function(el, index) {
         el.innerText = hasRolled ? diceValues[index] : '?';
         if (heldDice[index]) {
             el.classList.add('held');
@@ -95,32 +93,30 @@ function updateDiceUI() {
         }
     });
 
+    var msgEl = document.getElementById('game-message');
+    var btnRoll = document.getElementById('btn-roll');
     if (turnsLeft === 0 && !checkAllCompleted()) {
-        document.getElementById('game-message').innerText = "¡Se agotaron los turnos! Intenta de nuevo.";
-        document.getElementById('btn-roll').disabled = true;
+        if (msgEl) msgEl.innerText = "¡Se agotaron los turnos! Intenta de nuevo.";
+        if (btnRoll) btnRoll.disabled = true;
     }
 }
 
 function getFrequencies() {
-    const counts = {};
-    diceValues.forEach(x => { counts[x] = (counts[x] || 0) + 1; });
+    var counts = {};
+    diceValues.forEach(function(x) { counts[x] = (counts[x] || 0) + 1; });
     return Object.values(counts);
 }
 
 function checkCombo(type) {
     if (!hasRolled) return false;
-    const freqs = getFrequencies();
+    var freqs = getFrequencies();
 
-    if (type === 'trio') {
-        return freqs.some(count => count >= 3);
-    }
-    if (type === 'full') {
-        return (freqs.includes(3) && freqs.includes(2)) || freqs.includes(5);
-    }
+    if (type === 'trio') return freqs.some(function(count) { return count >= 3; });
+    if (type === 'full') return (freqs.includes(3) && freqs.includes(2)) || freqs.includes(5);
     if (type === 'straight') {
-        const uniqueSorted = [...new Set(diceValues)].sort((a,b) => a-b);
-        let maxSeq = 1, currentSeq = 1;
-        for (let i = 0; i < uniqueSorted.length - 1; i++) {
+        var uniqueSorted = Array.from(new Set(diceValues)).sort(function(a,b) { return a - b; });
+        var maxSeq = 1, currentSeq = 1;
+        for (var i = 0; i < uniqueSorted.length - 1; i++) {
             if (uniqueSorted[i+1] === uniqueSorted[i] + 1) {
                 currentSeq++;
                 maxSeq = Math.max(maxSeq, currentSeq);
@@ -130,9 +126,7 @@ function checkCombo(type) {
         }
         return maxSeq >= 4;
     }
-    if (type === 'generala') {
-        return freqs.includes(5);
-    }
+    if (type === 'generala') return freqs.includes(5);
     return false;
 }
 
@@ -141,96 +135,91 @@ function claimCombo(type) {
 
     if (checkCombo(type)) {
         combosCompleted[type] = true;
-        document.getElementById(`card-${type}`).classList.add('completed');
-        
-        const btn = document.querySelector(`#card-${type} .btn-claim`);
+        var cardEl = document.getElementById('card-' + type);
+        if (cardEl) cardEl.classList.add('completed');
+
+        var btn = document.querySelector('#card-' + type + ' .btn-claim');
         if (btn) btn.disabled = true;
 
         heldDice = [false, false, false, false, false];
-        
         showDiceModal(type);
         updateDiceUI();
 
-        if (checkAllCompleted()) {
-            document.getElementById('game-message').innerText = "¡FELICITACIONES! Has desbloqueado toda la investigación.";
+        var msgEl = document.getElementById('game-message');
+        if (checkAllCompleted() && msgEl) {
+            msgEl.innerText = "¡FELICITACIONES! Has desbloqueado toda la investigación.";
         }
     } else {
-        alert("Los dados actuales no cumplen con la condición de este combo. ¡Sigue intentando!");
+        alert("Los dados actuales no cumplen con la condición de este combo.");
     }
 }
 
 function checkAllCompleted() {
-    return Object.values(combosCompleted).every(val => val === true);
-}
-
-function getRandomFinding() {
-    if (academicFindings.length === 0) {
-        return "Hallazgo Académico: Has revisado todos los datos disponibles de la investigación.";
-    }
-    const randomIndex = Math.floor(Math.random() * academicFindings.length);
-    const selectedFinding = academicFindings[randomIndex];
-    academicFindings.splice(randomIndex, 1);
-    return selectedFinding;
+    return Object.values(combosCompleted).every(function(val) { return val === true; });
 }
 
 function showDiceModal(type) {
-    const title = comboTitles[type];
-    const randomFinding = getRandomFinding();
+    var title = comboTitles[type];
+    var randomFinding = academicFindings[Math.floor(Math.random() * academicFindings.length)];
 
-    document.getElementById('modal-title').innerText = title;
-    document.getElementById('modal-body').innerHTML = `
-        <div style="font-size: 0.95rem; line-height: 1.5; padding: 15px; color: #FFF;">
-            <p><strong>${randomFinding}</strong></p>
-        </div>
-    `;
-    document.getElementById('info-modal').classList.remove('hidden');
+    var modalTitle = document.getElementById('modal-title');
+    var modalBody = document.getElementById('modal-body');
+    var infoModal = document.getElementById('info-modal');
+
+    if (modalTitle) modalTitle.innerText = title;
+    if (modalBody) {
+        modalBody.innerHTML = '<div style="font-size: 0.95rem; line-height: 1.5; padding: 15px; color: #FFF;"><p><strong>' + randomFinding + '</strong></p></div>';
+    }
+    if (infoModal) infoModal.classList.remove('hidden');
 }
 
 function closeModal() {
-    document.getElementById('info-modal').classList.add('hidden');
+    var infoModal = document.getElementById('info-modal');
+    if (infoModal) infoModal.classList.add('hidden');
 }
 
 // ==========================================
-// JUEGO 2: CRESCENT SOLITAIRE
+// 3. JUEGO 2: CRESCENT SOLITAIRE
 // ==========================================
-const suits = ['♠', '♥', '♦', '♣'];
-const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+var suits = ['♠', '♥', '♦', '♣'];
+var values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
-let foundationsTop = [];
-let foundationsBot = [];
-let outerPiles = Array.from({ length: 16 }, () => []);
-let selectedCard = null;
-let shufflesLeft = 6;
+var foundationsTop = [];
+var foundationsBot = [];
+var outerPiles = Array.from({ length: 16 }, function() { return []; });
+var selectedCard = null;
+var shufflesLeft = 6;
 
 function initCrescentGame() {
     shufflesLeft = 6;
     selectedCard = null;
-    document.getElementById('shuffles-left').innerText = shufflesLeft;
+    var shufflesEl = document.getElementById('shuffles-left');
+    if (shufflesEl) shufflesEl.innerText = shufflesLeft;
 
-    let deck = [];
-    for (let d = 0; d < 2; d++) {
-        for (let s of suits) {
-            for (let v of values) {
-                deck.push({ suit: s, value: v, rank: values.indexOf(v) + 1 });
+    var deck = [];
+    for (var d = 0; d < 2; d++) {
+        for (var i = 0; i < suits.length; i++) {
+            for (var j = 0; j < values.length; j++) {
+                deck.push({ suit: suits[i], value: values[j], rank: j + 1 });
             }
         }
     }
     
-    deck.sort(() => Math.random() - 0.5);
+    deck.sort(function() { return Math.random() - 0.5; });
 
     foundationsTop = [];
     foundationsBot = [];
 
-    suits.forEach(s => {
-        let kIndex = deck.findIndex(c => c.value === 'K' && c.suit === s);
+    suits.forEach(function(s) {
+        var kIndex = deck.findIndex(function(c) { return c.value === 'K' && c.suit === s; });
         foundationsTop.push([deck.splice(kIndex, 1)[0]]);
 
-        let aIndex = deck.findIndex(c => c.value === 'A' && c.suit === s);
+        var aIndex = deck.findIndex(function(c) { return c.value === 'A' && c.suit === s; });
         foundationsBot.push([deck.splice(aIndex, 1)[0]]);
     });
 
-    outerPiles = Array.from({ length: 16 }, () => []);
-    let pileIdx = 0;
+    outerPiles = Array.from({ length: 16 }, function() { return []; });
+    var pileIdx = 0;
     while (deck.length > 0) {
         outerPiles[pileIdx % 16].push(deck.pop());
         pileIdx++;
@@ -240,48 +229,52 @@ function initCrescentGame() {
 }
 
 function renderCrescentBoard() {
-    foundationsTop.forEach((stack, i) => {
-        const el = document.getElementById(`f-top-${i}`);
-        const topCard = stack[stack.length - 1];
-        el.innerHTML = `${topCard.value}<br>${topCard.suit}`;
-        el.className = `card-slot foundation ${['♥','♦'].includes(topCard.suit) ? 'red' : 'black'}`;
-    });
-
-    foundationsBot.forEach((stack, i) => {
-        const el = document.getElementById(`f-bot-${i}`);
-        const topCard = stack[stack.length - 1];
-        el.innerHTML = `${topCard.value}<br>${topCard.suit}`;
-        el.className = `card-slot foundation ${['♥','♦'].includes(topCard.suit) ? 'red' : 'black'}`;
-    });
-
-    const container = document.getElementById('outer-piles-container');
-    container.innerHTML = '';
-    outerPiles.forEach((pile, i) => {
-        const slot = document.createElement('div');
-        slot.className = 'pile-slot';
-        if (pile.length > 0) {
-            const topCard = pile[pile.length - 1];
-            const isRed = ['♥','♦'].includes(topCard.suit);
-            slot.innerHTML = `<div class="card-slot ${isRed ? 'red' : 'black'}" onclick="selectOuterCard(${i})">
-                ${topCard.value}<br>${topCard.suit}
-            </div>`;
+    foundationsTop.forEach(function(stack, i) {
+        var el = document.getElementById('f-top-' + i);
+        if (el) {
+            var topCard = stack[stack.length - 1];
+            el.innerHTML = topCard.value + '<br>' + topCard.suit;
+            el.className = 'card-slot foundation ' + (['♥','♦'].includes(topCard.suit) ? 'red' : 'black');
         }
-        container.appendChild(slot);
     });
+
+    foundationsBot.forEach(function(stack, i) {
+        var el = document.getElementById('f-bot-' + i);
+        if (el) {
+            var topCard = stack[stack.length - 1];
+            el.innerHTML = topCard.value + '<br>' + topCard.suit;
+            el.className = 'card-slot foundation ' + (['♥','♦'].includes(topCard.suit) ? 'red' : 'black');
+        }
+    });
+
+    var container = document.getElementById('outer-piles-container');
+    if (container) {
+        container.innerHTML = '';
+        outerPiles.forEach(function(pile, i) {
+            var slot = document.createElement('div');
+            slot.className = 'pile-slot';
+            if (pile.length > 0) {
+                var topCard = pile[pile.length - 1];
+                var isRed = ['♥','♦'].includes(topCard.suit);
+                slot.innerHTML = '<div class="card-slot ' + (isRed ? 'red' : 'black') + '" onclick="selectOuterCard(' + i + ')">' + topCard.value + '<br>' + topCard.suit + '</div>';
+            }
+            container.appendChild(slot);
+        });
+    }
 }
 
 function selectOuterCard(pileIndex) {
     if (outerPiles[pileIndex].length === 0) return;
-    selectedCard = { pileIndex, card: outerPiles[pileIndex][outerPiles[pileIndex].length - 1] };
-    alert(`Carta seleccionada: ${selectedCard.card.value} de ${selectedCard.card.suit}. Haz clic en la base del centro para moverla.`);
+    selectedCard = { pileIndex: pileIndex, card: outerPiles[pileIndex][outerPiles[pileIndex].length - 1] };
+    alert("Carta seleccionada: " + selectedCard.card.value + " de " + selectedCard.card.suit);
 }
 
 function placeOnFoundation(type, foundationIndex) {
     if (!selectedCard) return;
 
-    let targetStack = (type === 'top') ? foundationsTop[foundationIndex] : foundationsBot[foundationIndex];
-    let topCard = targetStack[targetStack.length - 1];
-    let cardToMove = selectedCard.card;
+    var targetStack = (type === 'top') ? foundationsTop[foundationIndex] : foundationsBot[foundationIndex];
+    var topCard = targetStack[targetStack.length - 1];
+    var cardToMove = selectedCard.card;
 
     if (cardToMove.suit === topCard.suit) {
         if (type === 'top' && cardToMove.rank === topCard.rank - 1) {
@@ -289,7 +282,7 @@ function placeOnFoundation(type, foundationIndex) {
         } else if (type === 'bot' && cardToMove.rank === topCard.rank + 1) {
             targetStack.push(outerPiles[selectedCard.pileIndex].pop());
         } else {
-            alert("Movimiento inválido. Revisa la secuencia.");
+            alert("Movimiento inválido.");
             return;
         }
     } else {
@@ -299,20 +292,20 @@ function placeOnFoundation(type, foundationIndex) {
 
     selectedCard = null;
     renderCrescentBoard();
-    checkCrescentWin();
 }
 
 function shuffleCrescent() {
     if (shufflesLeft <= 0) {
-        alert("Has agotado las 6 barajadas permitidas.");
+        alert("Sin barajadas restantes.");
         return;
     }
     shufflesLeft--;
-    document.getElementById('shuffles-left').innerText = shufflesLeft;
+    var shufflesEl = document.getElementById('shuffles-left');
+    if (shufflesEl) shufflesEl.innerText = shufflesLeft;
 
-    outerPiles.forEach(pile => {
+    outerPiles.forEach(function(pile) {
         if (pile.length > 1) {
-            let bottom = pile.shift();
+            var bottom = pile.shift();
             pile.push(bottom);
         }
     });
@@ -320,44 +313,27 @@ function shuffleCrescent() {
     renderCrescentBoard();
 }
 
-function checkCrescentWin() {
-    let topComplete = foundationsTop.every(s => s.length === 13);
-    let botComplete = foundationsBot.every(s => s.length === 13);
-
-    if (topComplete && botComplete) {
-        document.getElementById('modal-title').innerText = "¡VICTORIA EN CRESCENT SOLITAIRE!";
-        document.getElementById('modal-body').innerHTML = `
-            <p>¡Has completado todas las secuencias de cartas!</p>
-            <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; margin-top:15px;">
-                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen 
-                    style="position:absolute; top:0; left:0; width:100%; height:100%;"></iframe>
-            </div>
-        `;
-        document.getElementById('info-modal').classList.remove('hidden');
-    }
-}
-
 // ==========================================
-// JUEGO 3: OCHO LOCO (CRAZY EIGHTS)
+// 4. JUEGO 3: OCHO LOCO (CRAZY EIGHTS)
 // ==========================================
-let ceDeck = [];
-let ceUserHand = [];
-let ceBotHand = [];
-let ceDiscardPile = [];
-let ceCurrentSuit = '';
-let ceSelectedIndices = [];
-let ceDrawnThisTurn = 0;
-let ceIsUserTurn = true;
-let ceIsGameOver = false;
+var ceDeck = [];
+var ceUserHand = [];
+var ceBotHand = [];
+var ceDiscardPile = [];
+var ceCurrentSuit = '';
+var ceSelectedIndices = [];
+var ceDrawnThisTurn = 0;
+var ceIsUserTurn = true;
+var ceIsGameOver = false;
 
 function createCrazyEightsDeck() {
     ceDeck = [];
-    for (let s of suits) {
-        for (let v of values) {
-            ceDeck.push({ suit: s, value: v });
+    for (var i = 0; i < suits.length; i++) {
+        for (var j = 0; j < values.length; j++) {
+            ceDeck.push({ suit: suits[i], value: values[j] });
         }
     }
-    ceDeck.sort(() => Math.random() - 0.5);
+    ceDeck.sort(function() { return Math.random() - 0.5; });
 }
 
 function initCrazyEightsGame() {
@@ -370,90 +346,88 @@ function initCrazyEightsGame() {
     ceIsUserTurn = true;
     ceIsGameOver = false;
 
-    for (let i = 0; i < 7; i++) {
+    for (var i = 0; i < 7; i++) {
         ceUserHand.push(ceDeck.pop());
         ceBotHand.push(ceDeck.pop());
     }
 
-    let top = ceDeck.pop();
+    var top = ceDeck.pop();
     ceDiscardPile.push(top);
     ceCurrentSuit = top.suit;
 
-    if (top.value === '8') {
-        setCEStatus("¡INICIO ESPECIAL! La carta inicial es un 8. Puedes tirar cualquier carta.");
-    } else {
-        setCEStatus("¡Juego iniciado! Es tu turno.");
-    }
-
+    setCEStatus(top.value === '8' ? "Carta inicial: 8." : "¡Juego iniciado!");
     renderCrazyEightsBoard();
 }
 
 function setCEStatus(msg) {
-    const el = document.getElementById('ce-status-msg');
+    var el = document.getElementById('ce-status-msg');
     if (el) el.innerText = msg;
 }
 
 function renderCrazyEightsBoard() {
-    document.getElementById('deck-count').innerText = ceDeck.length;
-    document.getElementById('bot-count').innerText = ceBotHand.length;
-    document.getElementById('current-suit-display').innerText = ceCurrentSuit;
+    var dCount = document.getElementById('deck-count');
+    var bCount = document.getElementById('bot-count');
+    var sDisplay = document.getElementById('current-suit-display');
 
-    const botHandEl = document.getElementById('bot-hand');
-    botHandEl.innerHTML = '';
-    ceBotHand.forEach(() => {
-        const cardDiv = document.createElement('div');
-        cardDiv.className = 'ce-card back';
-        botHandEl.appendChild(cardDiv);
-    });
+    if (dCount) dCount.innerText = ceDeck.length;
+    if (bCount) bCount.innerText = ceBotHand.length;
+    if (sDisplay) sDisplay.innerText = ceCurrentSuit;
 
-    const topCardContainer = document.getElementById('top-card-container');
-    topCardContainer.innerHTML = '';
-    if (ceDiscardPile.length > 0) {
-        const topCard = ceDiscardPile[ceDiscardPile.length - 1];
-        topCardContainer.appendChild(createCECardElement(topCard));
+    var botHandEl = document.getElementById('bot-hand');
+    if (botHandEl) {
+        botHandEl.innerHTML = '';
+        ceBotHand.forEach(function() {
+            var cardDiv = document.createElement('div');
+            cardDiv.className = 'ce-card back';
+            botHandEl.appendChild(cardDiv);
+        });
     }
 
-    const userHandEl = document.getElementById('user-hand');
-    userHandEl.innerHTML = '';
-    ceUserHand.forEach((card, index) => {
-        const cardEl = createCECardElement(card);
-        if (ceSelectedIndices.includes(index)) {
-            cardEl.classList.add('selected');
+    var topCardContainer = document.getElementById('top-card-container');
+    if (topCardContainer) {
+        topCardContainer.innerHTML = '';
+        if (ceDiscardPile.length > 0) {
+            topCardContainer.appendChild(createCECardElement(ceDiscardPile[ceDiscardPile.length - 1]));
         }
-        cardEl.onclick = () => toggleSelectUserCard(index);
-        userHandEl.appendChild(cardEl);
-    });
+    }
 
-    const playBtn = document.getElementById('ce-play-btn');
-    const passBtn = document.getElementById('ce-pass-btn');
+    var userHandEl = document.getElementById('user-hand');
+    if (userHandEl) {
+        userHandEl.innerHTML = '';
+        ceUserHand.forEach(function(card, index) {
+            var cardEl = createCECardElement(card);
+            if (ceSelectedIndices.includes(index)) {
+                cardEl.classList.add('selected');
+            }
+            cardEl.onclick = function() { toggleSelectUserCard(index); };
+            userHandEl.appendChild(cardEl);
+        });
+    }
 
-    playBtn.disabled = !ceIsUserTurn || ceSelectedIndices.length === 0 || ceIsGameOver;
-    passBtn.disabled = !ceIsUserTurn || ceDrawnThisTurn === 0 || ceIsGameOver;
+    var playBtn = document.getElementById('ce-play-btn');
+    var passBtn = document.getElementById('ce-pass-btn');
+
+    if (playBtn) playBtn.disabled = !ceIsUserTurn || ceSelectedIndices.length === 0 || ceIsGameOver;
+    if (passBtn) passBtn.disabled = !ceIsUserTurn || ceDrawnThisTurn === 0 || ceIsGameOver;
 }
 
 function createCECardElement(card) {
-    const cardDiv = document.createElement('div');
-    const isRed = ['♥', '♦'].includes(card.suit);
-    cardDiv.className = `ce-card ${isRed ? 'red' : 'black'}`;
-    
-    cardDiv.innerHTML = `
-        <div>${card.value}</div>
-        <div class="suit-center">${card.suit}</div>
-        <div style="text-align: right;">${card.value}</div>
-    `;
+    var cardDiv = document.createElement('div');
+    var isRed = ['♥', '♦'].includes(card.suit);
+    cardDiv.className = 'ce-card ' + (isRed ? 'red' : 'black');
+    cardDiv.innerHTML = '<div>' + card.value + '</div><div class="suit-center">' + card.suit + '</div><div style="text-align: right;">' + card.value + '</div>';
     return cardDiv;
 }
 
 function toggleSelectUserCard(index) {
     if (!ceIsUserTurn || ceIsGameOver) return;
-
-    const pos = ceSelectedIndices.indexOf(index);
+    var pos = ceSelectedIndices.indexOf(index);
     if (pos > -1) {
         ceSelectedIndices.splice(pos, 1);
     } else {
         if (ceSelectedIndices.length > 0) {
-            const firstCard = ceUserHand[ceSelectedIndices[0]];
-            const currentCard = ceUserHand[index];
+            var firstCard = ceUserHand[ceSelectedIndices[0]];
+            var currentCard = ceUserHand[index];
             if (firstCard.value !== currentCard.value) {
                 ceSelectedIndices = [index];
             } else {
@@ -469,31 +443,30 @@ function toggleSelectUserCard(index) {
 function playSelectedCards() {
     if (!ceIsUserTurn || ceSelectedIndices.length === 0 || ceIsGameOver) return;
 
-    const cardsToPlay = ceSelectedIndices.map(i => ceUserHand[i]);
-    const firstCard = cardsToPlay[0];
-    const topCard = ceDiscardPile[ceDiscardPile.length - 1];
+    var cardsToPlay = ceSelectedIndices.map(function(i) { return ceUserHand[i]; });
+    var firstCard = cardsToPlay[0];
+    var topCard = ceDiscardPile[ceDiscardPile.length - 1];
 
-    const isValidMove = (firstCard.value === '8') || 
-                        (firstCard.suit === ceCurrentSuit) || 
-                        (firstCard.value === topCard.value);
+    var isValidMove = (firstCard.value === '8') || (firstCard.suit === ceCurrentSuit) || (firstCard.value === topCard.value);
 
     if (!isValidMove) {
-        setCEStatus("Jugada inválida. Debes coincidir con el palo o el valor, o jugar un 8.");
+        setCEStatus("Jugada inválida.");
         return;
     }
 
-    ceSelectedIndices.sort((a, b) => b - a).forEach(i => {
+    ceSelectedIndices.sort(function(a, b) { return b - a; }).forEach(function(i) {
         ceUserHand.splice(i, 1);
     });
 
-    cardsToPlay.forEach(c => ceDiscardPile.push(c));
+    cardsToPlay.forEach(function(c) { ceDiscardPile.push(c); });
     ceSelectedIndices = [];
     ceDrawnThisTurn = 0;
 
-    const lastPlayed = cardsToPlay[cardsToPlay.length - 1];
+    var lastPlayed = cardsToPlay[cardsToPlay.length - 1];
 
     if (lastPlayed.value === '8') {
-        document.getElementById('suit-modal').classList.remove('hidden');
+        var suitModal = document.getElementById('suit-modal');
+        if (suitModal) suitModal.classList.remove('hidden');
         renderCrazyEightsBoard();
         return;
     } else {
@@ -503,96 +476,71 @@ function playSelectedCards() {
     if (checkCrazyEightsWin()) return;
 
     ceIsUserTurn = false;
-    setCEStatus("Turno del Oponente (IA)...");
+    setCEStatus("Turno de la IA...");
     renderCrazyEightsBoard();
-    setTimeout(botTurn, 1200);
+    setTimeout(botTurn, 1000);
 }
 
 function selectSuit(suit) {
     ceCurrentSuit = suit;
-    document.getElementById('suit-modal').classList.add('hidden');
+    var suitModal = document.getElementById('suit-modal');
+    if (suitModal) suitModal.classList.add('hidden');
 
     if (checkCrazyEightsWin()) return;
 
     ceIsUserTurn = false;
-    setCEStatus(`Cambiaste el palo a ${suit}. Turno de la IA...`);
+    setCEStatus("Palo cambiado a " + suit + ". Turno IA...");
     renderCrazyEightsBoard();
-    setTimeout(botTurn, 1200);
+    setTimeout(botTurn, 1000);
 }
 
 function drawCardUser() {
     if (!ceIsUserTurn || ceIsGameOver) return;
+    if (ceDeck.length === 0) return;
 
-    if (ceDeck.length === 0) {
-        setCEStatus("El mazo está vacío. Si no puedes jugar, pasa tu turno.");
-        return;
-    }
-
-    const drawnCard = ceDeck.pop();
+    var drawnCard = ceDeck.pop();
     ceUserHand.push(drawnCard);
     ceDrawnThisTurn++;
-    setCEStatus(`Robaste: ${drawnCard.value} de ${drawnCard.suit}`);
+    setCEStatus("Robaste una carta.");
     renderCrazyEightsBoard();
 }
 
 function passTurn() {
     if (!ceIsUserTurn || ceDrawnThisTurn === 0 || ceIsGameOver) return;
-
     ceSelectedIndices = [];
     ceDrawnThisTurn = 0;
     ceIsUserTurn = false;
-    setCEStatus("Pasaste el turno. Le toca a la IA.");
+    setCEStatus("Pasaste turno.");
     renderCrazyEightsBoard();
-    setTimeout(botTurn, 1200);
+    setTimeout(botTurn, 1000);
 }
 
 function botTurn() {
     if (ceIsGameOver) return;
 
-    const topCard = ceDiscardPile[ceDiscardPile.length - 1];
+    var topCard = ceDiscardPile[ceDiscardPile.length - 1];
+    var validIndices = [];
 
-    let validIndices = [];
-    ceBotHand.forEach((card, idx) => {
+    ceBotHand.forEach(function(card, idx) {
         if (card.value === '8' || card.suit === ceCurrentSuit || card.value === topCard.value) {
             validIndices.push(idx);
         }
     });
 
     if (validIndices.length > 0) {
-        let nonEight = validIndices.find(i => ceBotHand[i].value !== '8');
-        let playIndex = (nonEight !== undefined) ? nonEight : validIndices[0];
-
-        const playedCard = ceBotHand.splice(playIndex, 1)[0];
+        var playIndex = validIndices[0];
+        var playedCard = ceBotHand.splice(playIndex, 1)[0];
         ceDiscardPile.push(playedCard);
 
         if (playedCard.value === '8') {
-            const suitCounts = { '♠': 0, '♥': 0, '♦': 0, '♣': 0 };
-            ceBotHand.forEach(c => suitCounts[c.suit]++);
-            let bestSuit = '♠';
-            let maxCount = -1;
-            for (let s in suitCounts) {
-                if (suitCounts[s] > maxCount) {
-                    maxCount = suitCounts[s];
-                    bestSuit = s;
-                }
-            }
-            ceCurrentSuit = bestSuit;
-            setCEStatus(`La IA jugó un 8 y cambió el palo a ${bestSuit}.`);
+            ceCurrentSuit = '♠';
         } else {
             ceCurrentSuit = playedCard.suit;
-            setCEStatus(`La IA jugó: ${playedCard.value} de ${playedCard.suit}.`);
         }
 
         if (checkCrazyEightsWin()) return;
-
     } else {
-        if (ceDeck.length > 0) {
-            const drawn = ceDeck.pop();
-            ceBotHand.push(drawn);
-            setCEStatus("La IA no tenía jugada y robó una carta.");
-        } else {
-            setCEStatus("La IA no tiene jugadas y el mazo está vacío. Pasa turno.");
-        }
+        if (deckLength > 0) ceBotHand.push(ceDeck.pop());
     }
 
     ceIsUserTurn = true;
@@ -602,24 +550,14 @@ function botTurn() {
 function checkCrazyEightsWin() {
     if (ceUserHand.length === 0) {
         ceIsGameOver = true;
-        setCEStatus("¡FELICITACIONES! Has ganado Ocho Loco.");
-        document.getElementById('modal-title').innerText = "¡VICTORIA EN OCHO LOCO!";
-        document.getElementById('modal-body').innerText = "¡Has logrado descartar toda tu mano antes que la IA!";
-        document.getElementById('info-modal').classList.remove('hidden');
+        alert("¡Ganaste Ocho Loco!");
         return true;
     }
-
     if (ceBotHand.length === 0) {
         ceIsGameOver = true;
-        setCEStatus("La IA ha ganado. ¡Inténtalo de nuevo!");
-        document.getElementById('modal-title').innerText = "¡DERROTA!";
-        document.getElementById('modal-body').innerText = "La IA descartó toda su mano primero.";
-        document.getElementById('info-modal').classList.remove('hidden');
+        alert("Ganó la IA.");
         return true;
     }
-
     return false;
 }
-}
-    updateCEUI();
-}
+
