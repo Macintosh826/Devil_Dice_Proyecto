@@ -394,12 +394,10 @@ function setCEStatus(msg) {
 }
 
 function renderCrazyEightsBoard() {
-    // Actualizar Mazo y Contadores
     document.getElementById('deck-count').innerText = ceDeck.length;
     document.getElementById('bot-count').innerText = ceBotHand.length;
     document.getElementById('current-suit-display').innerText = ceCurrentSuit;
 
-    // Mano Bot (cartas boca abajo)
     const botHandEl = document.getElementById('bot-hand');
     botHandEl.innerHTML = '';
     ceBotHand.forEach(() => {
@@ -408,19 +406,17 @@ function renderCrazyEightsBoard() {
         botHandEl.appendChild(cardDiv);
     });
 
-    // Carta Superior del Mazo de Descarte
     const topCardContainer = document.getElementById('top-card-container');
     topCardContainer.innerHTML = '';
     if (ceDiscardPile.length > 0) {
         const topCard = ceDiscardPile[ceDiscardPile.length - 1];
-        topCardContainer.appendChild(createCardElement(topCard));
+        topCardContainer.appendChild(createCECardElement(topCard));
     }
 
-    // Mano del Usuario
     const userHandEl = document.getElementById('user-hand');
     userHandEl.innerHTML = '';
     ceUserHand.forEach((card, index) => {
-        const cardEl = createCardElement(card);
+        const cardEl = createCECardElement(card);
         if (ceSelectedIndices.includes(index)) {
             cardEl.classList.add('selected');
         }
@@ -428,7 +424,6 @@ function renderCrazyEightsBoard() {
         userHandEl.appendChild(cardEl);
     });
 
-    // Botones de acción
     const playBtn = document.getElementById('ce-play-btn');
     const passBtn = document.getElementById('ce-pass-btn');
 
@@ -436,7 +431,7 @@ function renderCrazyEightsBoard() {
     passBtn.disabled = !ceIsUserTurn || ceDrawnThisTurn === 0 || ceIsGameOver;
 }
 
-function createCardElement(card) {
+function createCECardElement(card) {
     const cardDiv = document.createElement('div');
     const isRed = ['♥', '♦'].includes(card.suit);
     cardDiv.className = `ce-card ${isRed ? 'red' : 'black'}`;
@@ -487,7 +482,6 @@ function playSelectedCards() {
         return;
     }
 
-    // Remover cartas de la mano del usuario
     ceSelectedIndices.sort((a, b) => b - a).forEach(i => {
         ceUserHand.splice(i, 1);
     });
@@ -557,7 +551,6 @@ function botTurn() {
 
     const topCard = ceDiscardPile[ceDiscardPile.length - 1];
 
-    // Buscar jugada de la IA
     let validIndices = [];
     ceBotHand.forEach((card, idx) => {
         if (card.value === '8' || card.suit === ceCurrentSuit || card.value === topCard.value) {
@@ -566,7 +559,6 @@ function botTurn() {
     });
 
     if (validIndices.length > 0) {
-        // Preferir cartas que no sean 8
         let nonEight = validIndices.find(i => ceBotHand[i].value !== '8');
         let playIndex = (nonEight !== undefined) ? nonEight : validIndices[0];
 
@@ -574,7 +566,6 @@ function botTurn() {
         ceDiscardPile.push(playedCard);
 
         if (playedCard.value === '8') {
-            // La IA elige el palo que más tenga en su mano
             const suitCounts = { '♠': 0, '♥': 0, '♦': 0, '♣': 0 };
             ceBotHand.forEach(c => suitCounts[c.suit]++);
             let bestSuit = '♠';
@@ -595,7 +586,6 @@ function botTurn() {
         if (checkCrazyEightsWin()) return;
 
     } else {
-        // La IA debe robar si no tiene jugada
         if (ceDeck.length > 0) {
             const drawn = ceDeck.pop();
             ceBotHand.push(drawn);
@@ -629,6 +619,7 @@ function checkCrazyEightsWin() {
     }
 
     return false;
+}
 }
     updateCEUI();
 }
