@@ -1,11 +1,12 @@
 // ==========================================
-// 1. SELECCIÓN DE PANTALLAS (REGISTRADO PRIMERO)
+// 1. SELECCIÓN DE PANTALLAS
 // ==========================================
 function selectGame(gameType) {
     var selector = document.getElementById('game-selector-screen');
     var diceSec = document.getElementById('dice-game-section');
     var crescentSec = document.getElementById('crescent-game-section');
     var crazySec = document.getElementById('crazyeights-game-section');
+    var gofishSec = document.getElementById('gofish-game-section');
 
     if (selector) selector.classList.add('hidden');
 
@@ -17,6 +18,8 @@ function selectGame(gameType) {
     } else if (gameType === 'crazyeights' && crazySec) {
         crazySec.classList.remove('hidden');
         if (typeof initCrazyEightsGame === 'function') initCrazyEightsGame();
+    } else if (gameType === 'gofish' && gofishSec) {
+        gofishSec.classList.remove('hidden');
     }
 }
 
@@ -25,10 +28,12 @@ function showSelector() {
     var diceSec = document.getElementById('dice-game-section');
     var crescentSec = document.getElementById('crescent-game-section');
     var crazySec = document.getElementById('crazyeights-game-section');
+    var gofishSec = document.getElementById('gofish-game-section');
 
     if (diceSec) diceSec.classList.add('hidden');
     if (crescentSec) crescentSec.classList.add('hidden');
     if (crazySec) crazySec.classList.add('hidden');
+    if (gofishSec) gofishSec.classList.add('hidden');
     if (selector) selector.classList.remove('hidden');
 }
 
@@ -540,7 +545,7 @@ function botTurn() {
 
         if (checkCrazyEightsWin()) return;
     } else {
-        if (deckLength > 0) ceBotHand.push(ceDeck.pop());
+        if (ceDeck.length > 0) ceBotHand.push(ceDeck.pop());
     }
 
     ceIsUserTurn = true;
@@ -559,5 +564,352 @@ function checkCrazyEightsWin() {
         return true;
     }
     return false;
+}
+
+// ==========================================
+// 5. JUEGO 4: GO FISH (VE A PESCAR)
+// ==========================================
+var gfNumPlayers = 2; // Por defecto 2 jugadores
+var gfDeck = [];
+var gfPlayers = []; // { id: 0 (Tú), name: 'Tú'/'Bill'/etc, hand: [], books: 0, isBot: boolean }
+var gfCurrentTurnIndex = 0;
+var gfSelectedTargetIndex = 1;
+var gfPendingFishRank = null; // Rango pedido esperando que el usuario pesque
+var gfIsGameOver = false;
+
+function setGFNumPlayers(num, btn) {
+    gfNumPlayers = num;
+    var btns = document.querySelectorAll('.btn-gf-num');
+    btns.forEach(function(b) { b.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
+}
+
+function createGFDeck() {
+    var deck = [];
+    for (var i = 0; i < suits.length; i++) {
+        for (var j = 0; j < values.length; j++) {
+            deck.push({ suit: suits[i], value: values[j] });
+        }
+    }
+    deck.sort(function() { return Math.random() - 0.5; });
+    return deck;
+}
+
+function initGoFishGame() {
+    gfDeck = createGFDeck();
+    gfPlayers = [];
+    gfIsGameOver = false;
+    gfPendingFishRank = null;
+
+    var botNames = ['Bill', 'Pedro', 'Ana'];
+    gfPlayers.push({ id: 0, name: 'Tú', hand: [], books: 0, isBot: false });
+
+    for (var p = 1; p < gfNumPlayers; p++) {
+        gfPlayers.push({ id: p, name: botNames[p - 1], hand: [], books: 0, isBot: true });
+    }
+
+    // Regla de reparto: 2 jugadores = 7 cartas c/u; 3 o 4 jugadores = 6 o 5 cartas c/u
+    var initialCards = (gfNumPlayers === 2) ? 7 : (gfNumPlayers === 3 ? 6 : 5);
+
+    for (var c = 0; c < initialCards; c++) {
+        for (var p = 0; p < gfPlayers.length; p++) {
+            gfPlayers[p].hand.push(gfDeck.pop());
+        }
+    }
+
+    // Seleccionar primer jugador al azar
+    gfCurrentTurnIndex = Math.floor(Math.random() * gfPlayers.length);
+
+    // Ocultar configuración y mostrar mesa
+    var setupPanel = document.getElementById('gf-setup-panel');
+    var playArea = document.getElementById('gf-play-area');
+    if (setupPanel) setupPanel.classList.add('hidden');
+    if (playArea) playArea.classList.remove('hidden');
+
+    // Verificar libros iniciales
+    for (var p = 0; p < gfPlayers.length; p++) {
+        checkAndRemoveBooks(p);
+    }
+
+    setGFStatus("Juego listo. Empieza " + gfPlayers[gfCurrentTurnIndex].name + ".");
+    renderGoFishBoard();
+
+    if (gfPlayers[gfCurrentTurnIndex].isBot) {
+        setTimeout(processGFBotTurn, 1500);
+    }
+}
+
+function setGFStatus(msg) {
+    var banner = document.getElementById('gf-status-banner');
+    if (banner) banner.innerText = msg;
+}
+
+function checkAndRemoveBooks(playerIdx) {
+    var player = gfPlayers[playerIdx];
+    var counts = {};
+
+    player.hand.forEach(function(card) {
+        counts[card.value] = (counts[card.value] || 0) + 1;
+    });
+
+    for (var val in counts) {
+        if (counts[val] === 4) {
+            // Remover las 4 cartas del libro
+            player.hand = player.hand.filter(function(card) { return card.value !== val; });
+            player.books++;
+            setGFStatus(player.name + " ¡ha formado un libro de " + val + "s!");
+        }
+    }
+}
+
+function renderGoFishBoard() {
+    // Render Oponentes
+    var opContainer = document.getElementById('gf-opponents-container');
+    if (opContainer) {
+        opContainer.innerHTML = '';
+        for (var i = 1; i < gfPlayers.length; i++) {
+            var p = gfPlayers[i];
+            var box = document.createElement('div');
+            box.className = 'gf-opponent-box ' + (gfCurrentTurnIndex === i ? 'active-turn' : '');
+            box.innerHTML = '<div class="gf-op-name">' + p.name + '</div><div class="gf-op-stats">Cartas: ' + p.hand.length + ' | Libros: ' + p.books + '</div>';
+            opContainer.appendChild(box);
+        }
+    }
+
+    // Render Mazo central (Piscina)
+    var poolCards = document.getElementById('gf-pool-graphics');
+    if (poolCards) {
+        poolCards.innerText = " Cartas: " + gfDeck.length;
+    }
+
+    // Libros del usuario
+    var uBooks = document.getElementById('gf-user-books');
+    if (uBooks) uBooks.innerText = gfPlayers[0].books;
+
+    // Mano del Usuario
+    var uHandEl = document.getElementById('gf-user-hand');
+    if (uHandEl) {
+        uHandEl.innerHTML = '';
+        // Ordenar mano por rango para mejor visualización
+        gfPlayers[0].hand.sort(function(a, b) { return values.indexOf(a.value) - values.indexOf(b.value); });
+
+        gfPlayers[0].hand.forEach(function(card) {
+            var isRed = ['♥', '♦'].includes(card.suit);
+            var cardDiv = document.createElement('div');
+            cardDiv.className = 'ce-card ' + (isRed ? 'red' : 'black');
+            cardDiv.innerHTML = '<div>' + card.value + '</div><div class="suit-center">' + card.suit + '</div><div style="text-align: right;">' + card.value + '</div>';
+            uHandEl.appendChild(cardDiv);
+        });
+    }
+
+    // Panel de Solicitud de cartas (Turno del usuario)
+    var askPanel = document.getElementById('gf-ask-panel');
+    if (askPanel) {
+        if (gfCurrentTurnIndex === 0 && !gfPendingFishRank && !gfIsGameOver) {
+            askPanel.classList.remove('hidden');
+            renderGFAskPanel();
+        } else {
+            askPanel.classList.add('hidden');
+        }
+    }
+}
+
+function renderGFAskPanel() {
+    var targetDiv = document.getElementById('gf-target-selectors');
+    var rankDiv = document.getElementById('gf-rank-buttons');
+
+    if (targetDiv) {
+        targetDiv.innerHTML = '';
+        if (gfPlayers.length > 2) {
+            targetDiv.innerHTML = '<span>Pedir a: </span>';
+            for (var i = 1; i < gfPlayers.length; i++) {
+                (function(idx) {
+                    var btn = document.createElement('button');
+                    btn.className = 'btn-gf-target ' + (gfSelectedTargetIndex === idx ? 'selected' : '');
+                    btn.innerText = gfPlayers[idx].name;
+                    btn.onclick = function() {
+                        gfSelectedTargetIndex = idx;
+                        renderGFAskPanel();
+                    };
+                    targetDiv.appendChild(btn);
+                })(i);
+            }
+        } else {
+            gfSelectedTargetIndex = 1; // Solo hay 1 rival (Bill)
+        }
+    }
+
+    if (rankDiv) {
+        rankDiv.innerHTML = '';
+        // Regla: Solo se puede pedir rangos que el jugador ya tenga en la mano
+        var userRanks = Array.from(new Set(gfPlayers[0].hand.map(function(c) { return c.value; })));
+
+        if (userRanks.length === 0) {
+            // Si el usuario no tiene cartas, debe robar
+            refillHandIfEmpty(0);
+            renderGoFishBoard();
+            return;
+        }
+
+        userRanks.forEach(function(rank) {
+            var btn = document.createElement('button');
+            btn.className = 'btn-gf-ask';
+            btn.innerText = rank;
+            btn.onclick = function() { userAskRank(rank); };
+            rankDiv.appendChild(btn);
+        });
+    }
+}
+
+function userAskRank(rank) {
+    if (gfCurrentTurnIndex !== 0 || gfIsGameOver) return;
+
+    var targetPlayer = gfPlayers[gfSelectedTargetIndex];
+    setGFStatus("Le pides " + rank + "s a " + targetPlayer.name + "...");
+
+    var matchingCards = targetPlayer.hand.filter(function(c) { return c.value === rank; });
+
+    if (matchingCards.length > 0) {
+        // Entrega las cartas y obtiene otro turno
+        targetPlayer.hand = targetPlayer.hand.filter(function(c) { return c.value !== rank; });
+        gfPlayers[0].hand = gfPlayers[0].hand.concat(matchingCards);
+
+        checkAndRemoveBooks(0);
+        setGFStatus("¡" + targetPlayer.name + " tenía " + matchingCards.length + " " + rank + "(s)! Obtienes otro turno.");
+
+        refillHandIfEmpty(gfSelectedTargetIndex);
+        checkGameOver();
+        renderGoFishBoard();
+    } else {
+        // "VE A PESCAR" (Go Fish)
+        setGFStatus(targetPlayer.name + ' dice: "¡VE A PESCAR!". Haz clic en el montón del centro para pescar.');
+        gfPendingFishRank = rank;
+        renderGoFishBoard();
+    }
+}
+
+function fishFromOcean() {
+    if (gfCurrentTurnIndex !== 0 || !gfPendingFishRank || gfIsGameOver) return;
+
+    if (gfDeck.length > 0) {
+        var drawnCard = gfDeck.pop();
+        gfPlayers[0].hand.push(drawnCard);
+
+        setGFStatus("Pescaste: " + drawnCard.value + " de " + drawnCard.suit);
+
+        checkAndRemoveBooks(0);
+
+        if (drawnCard.value === gfPendingFishRank) {
+            setGFStatus("¡Pescaste el " + gfPendingFishRank + " que pediste! Obtienes otro turno.");
+            gfPendingFishRank = null;
+            renderGoFishBoard();
+            return;
+        }
+    } else {
+        setGFStatus("El montón de pesca está vacío.");
+    }
+
+    gfPendingFishRank = null;
+    passGFTurn();
+}
+
+function passGFTurn() {
+    checkGameOver();
+    if (gfIsGameOver) return;
+
+    gfCurrentTurnIndex = (gfCurrentTurnIndex + 1) % gfPlayers.length;
+    renderGoFishBoard();
+
+    if (gfPlayers[gfCurrentTurnIndex].isBot) {
+        setTimeout(processGFBotTurn, 1500);
+    }
+}
+
+function processGFBotTurn() {
+    if (gfIsGameOver) return;
+
+    var bot = gfPlayers[gfCurrentTurnIndex];
+
+    refillHandIfEmpty(gfCurrentTurnIndex);
+    if (bot.hand.length === 0) {
+        passGFTurn();
+        return;
+    }
+
+    // Elegir objetivo y rango al azar de su mano
+    var targetIdx = 0;
+    do {
+        targetIdx = Math.floor(Math.random() * gfPlayers.length);
+    } while (targetIdx === gfCurrentTurnIndex);
+
+    var targetPlayer = gfPlayers[targetIdx];
+    var randomCard = bot.hand[Math.floor(Math.random() * bot.hand.length)];
+    var askedRank = randomCard.value;
+
+    setGFStatus(bot.name + " le pide " + askedRank + "s a " + targetPlayer.name + "...");
+
+    setTimeout(function() {
+        var matchingCards = targetPlayer.hand.filter(function(c) { return c.value === askedRank; });
+
+        if (matchingCards.length > 0) {
+            targetPlayer.hand = targetPlayer.hand.filter(function(c) { return c.value !== askedRank; });
+            bot.hand = bot.hand.concat(matchingCards);
+
+            checkAndRemoveBooks(gfCurrentTurnIndex);
+            setGFStatus(targetPlayer.name + " le dio " + matchingCards.length + " " + askedRank + "(s) a " + bot.name + ". " + bot.name + " juega de nuevo.");
+
+            refillHandIfEmpty(targetIdx);
+            checkGameOver();
+
+            if (!gfIsGameOver) setTimeout(processGFBotTurn, 1500);
+        } else {
+            setGFStatus(targetPlayer.name + ' dice: "¡VE A PESCAR!" a ' + bot.name + '.');
+
+            setTimeout(function() {
+                if (gfDeck.length > 0) {
+                    var drawnCard = gfDeck.pop();
+                    bot.hand.push(drawnCard);
+                    checkAndRemoveBooks(gfCurrentTurnIndex);
+
+                    if (drawnCard.value === askedRank) {
+                        setGFStatus(bot.name + " pescó lo que pidió y juega otra vez.");
+                        if (!gfIsGameOver) setTimeout(processGFBotTurn, 1500);
+                        return;
+                    }
+                }
+                passGFTurn();
+            }, 1200);
+        }
+        renderGoFishBoard();
+    }, 1200);
+}
+
+function refillHandIfEmpty(playerIdx) {
+    var player = gfPlayers[playerIdx];
+    if (player.hand.length === 0 && gfDeck.length > 0) {
+        var initialCards = (gfNumPlayers === 2) ? 7 : (gfNumPlayers === 3 ? 6 : 5);
+        for (var i = 0; i < initialCards && gfDeck.length > 0; i++) {
+            player.hand.push(gfDeck.pop());
+        }
+        setGFStatus(player.name + " se quedó sin cartas y robó del montón.");
+    }
+}
+
+function checkGameOver() {
+    var totalBooks = gfPlayers.reduce(function(sum, p) { return sum + p.books; }, 0);
+
+    // Fin de juego: 13 libros completados o mazo vacío sin cartas
+    if (totalBooks === 13 || (gfDeck.length === 0 && gfPlayers.every(function(p) { return p.hand.length === 0; }))) {
+        gfIsGameOver = true;
+
+        var winner = gfPlayers[0];
+        gfPlayers.forEach(function(p) {
+            if (p.books > winner.books) winner = p;
+        });
+
+        document.getElementById('modal-title').innerText = "¡FIN DEL JUEGO GO FISH!";
+        document.getElementById('modal-body').innerHTML = '<p><strong>Ganador: ' + winner.name + ' con ' + winner.books + ' libros.</strong></p>';
+        document.getElementById('info-modal').classList.remove('hidden');
+    }
 }
 
