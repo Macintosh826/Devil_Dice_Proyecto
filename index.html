@@ -17,6 +17,7 @@
             <button class="btn-selector" onclick="selectGame('dice')">🎲 DEVIL DICE (DADOS)</button>
             <button class="btn-selector" onclick="selectGame('crescent')">🃏 CRESCENT SOLITAIRE (CARTAS)</button>
             <button class="btn-selector" onclick="selectGame('crazyeights')">🎴 OCHO LOCO (CRAZY EIGHTS)</button>
+            <button class="btn-selector" onclick="selectGame('gofish')">🐟 GO FISH (VE A PESCAR)</button>
         </div>
     </div>
 
@@ -107,13 +108,11 @@
         </header>
 
         <div class="crazyeights-board panel">
-            <!-- Mano Rival -->
             <div class="hand-container">
                 <div class="hand-label">OPONENTE (IA) - CARTAS: <span id="bot-count">0</span></div>
                 <div class="cards-row" id="bot-hand"></div>
             </div>
 
-            <!-- Zona Central -->
             <div class="play-area-ce">
                 <div class="deck-zone-ce">
                     <span class="zone-label">MAZO (<span id="deck-count">0</span>)</span>
@@ -126,20 +125,70 @@
                 </div>
             </div>
 
-            <!-- Estado y Mensajes -->
             <div id="ce-status-msg" class="message ce-banner">Iniciando el juego...</div>
 
-            <!-- Mano del Jugador -->
             <div class="hand-container">
                 <div class="hand-label">TU MANO</div>
                 <div class="cards-row" id="user-hand"></div>
             </div>
 
-            <!-- Botones -->
             <div class="controls-ce">
                 <button class="btn-primary" id="ce-play-btn" onclick="playSelectedCards()" disabled>CONFIRMAR JUGADA</button>
                 <button class="btn-primary btn-alt" id="ce-pass-btn" onclick="passTurn()" disabled>PASAR TURNO</button>
                 <button class="btn-primary btn-alt" onclick="initCrazyEightsGame()">REINICIAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JUEGO 4: GO FISH (VE A PESCAR) -->
+    <div id="gofish-game-section" class="game-section hidden">
+        <button class="btn-back" onclick="showSelector()">← Volver a la selección</button>
+        <header>
+            <h1>VE A PESCAR (GO FISH)</h1>
+            <p class="sub">Junta 4 cartas del mismo rango para formar libros</p>
+        </header>
+
+        <div class="gofish-board">
+            <!-- Selección de Jugadores antes de Repartir -->
+            <div id="gf-setup-panel" class="panel gf-setup">
+                <h2>CONFIGURACIÓN DEL JUEGO</h2>
+                <div class="gf-config-row">
+                    <label>Jugadores:</label>
+                    <button class="btn-gf-num active" onclick="setGFNumPlayers(2, this)">2</button>
+                    <button class="btn-gf-num" onclick="setGFNumPlayers(3, this)">3</button>
+                    <button class="btn-gf-num" onclick="setGFNumPlayers(4, this)">4</button>
+                </div>
+                <button class="btn-primary" onclick="initGoFishGame()">Repartir 🎴</button>
+            </div>
+
+            <!-- Mesa de Juego estilo verde -->
+            <div id="gf-play-area" class="gf-table hidden">
+                <!-- Oponentes (Rival superior / laterales) -->
+                <div id="gf-opponents-container" class="gf-opponents"></div>
+
+                <!-- Océano / Mazo Central de Pesca -->
+                <div class="gf-ocean-zone">
+                    <div id="gf-fish-pile" class="gf-fish-pool" onclick="fishFromOcean()">
+                        <div class="gf-pool-cards" id="gf-pool-graphics"></div>
+                        <span class="pool-text">Mesa (Pescar)</span>
+                    </div>
+                </div>
+
+                <!-- Banner Informativo/Consola de mensajes -->
+                <div id="gf-status-banner" class="message ce-banner">Selecciona un rango de tu mano para pedirlo.</div>
+
+                <!-- Panel de Elección de Rango a Pedir -->
+                <div id="gf-ask-panel" class="gf-ask-box hidden">
+                    <span id="gf-ask-label">¿A quién y qué rango quieres pedir?</span>
+                    <div id="gf-target-selectors" class="gf-targets"></div>
+                    <div id="gf-rank-buttons" class="gf-rank-btns"></div>
+                </div>
+
+                <!-- Mano del Jugador -->
+                <div class="hand-container">
+                    <div class="hand-label">TU MANO - LIBROS: <span id="gf-user-books">0</span></div>
+                    <div class="cards-row" id="gf-user-hand"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -167,8 +216,5 @@
     </div>
 
     <script src="script.js"></script>
-</body>
-</html>
-    </script>
 </body>
 </html>
