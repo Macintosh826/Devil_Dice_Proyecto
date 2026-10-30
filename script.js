@@ -38,7 +38,7 @@ function showSelector() {
 }
 
 // ==========================================
-// 2. JUEGO 1: DEVIL DICE (DADOS)
+// 2. JUEGO 1: DEVIL DICE (DADOS) - SE MANTIENE
 // ==========================================
 var diceValues = [1, 1, 1, 1, 1];
 var heldDice = [false, false, false, false, false];
@@ -184,7 +184,7 @@ function closeModal() {
 }
 
 // ==========================================
-// 3. JUEGO 2: CRESCENT SOLITAIRE
+// 3. JUEGO 2: CRESCENT SOLITAIRE (PREMIO: VIDEO DE YOUTUBE OCULTO)
 // ==========================================
 var suits = ['♠', '♥', '♦', '♣'];
 var values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
@@ -297,6 +297,7 @@ function placeOnFoundation(type, foundationIndex) {
 
     selectedCard = null;
     renderCrescentBoard();
+    checkCrescentWin();
 }
 
 function shuffleCrescent() {
@@ -318,8 +319,25 @@ function shuffleCrescent() {
     renderCrescentBoard();
 }
 
+function checkCrescentWin() {
+    var topComplete = foundationsTop.every(function(s) { return s.length === 13; });
+    var botComplete = foundationsBot.every(function(s) { return s.length === 13; });
+
+    if (topComplete && botComplete) {
+        document.getElementById('modal-title').innerText = "¡PREMIO: ENTREVISTA DE INVESTIGACIÓN!";
+        document.getElementById('modal-body').innerHTML = `
+            <p>¡Has completado el Solitario Crescent! Como recompensa, desbloqueaste la entrevista exclusiva del proyecto:</p>
+            <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; margin-top:15px;">
+                <iframe src="https://www.youtube.com/embed/AQUÍ_VA_EL_ID_DE_TU_VIDEO" frameborder="0" allowfullscreen 
+                    style="position:absolute; top:0; left:0; width:100%; height:100%;"></iframe>
+            </div>
+        `;
+        document.getElementById('info-modal').classList.remove('hidden');
+    }
+}
+
 // ==========================================
-// 4. JUEGO 3: OCHO LOCO (CRAZY EIGHTS)
+// 4. JUEGO 3: OCHO LOCO (PREMIO: INFOGRAFÍA)
 // ==========================================
 var ceDeck = [];
 var ceUserHand = [];
@@ -555,26 +573,31 @@ function botTurn() {
 function checkCrazyEightsWin() {
     if (ceUserHand.length === 0) {
         ceIsGameOver = true;
-        alert("¡Ganaste Ocho Loco!");
+        document.getElementById('modal-title').innerText = "¡PREMIO: INFOGRAFÍA DE INVESTIGACIÓN!";
+        document.getElementById('modal-body').innerHTML = `
+            <p>¡Ganaste en Ocho Loco! Has desbloqueado la infografía oficial del proyecto:</p>
+            <img src="infografia_1_evolucion_mercado.png" alt="Infografía Evolución del Mercado" class="modal-infographic">
+        `;
+        document.getElementById('info-modal').classList.remove('hidden');
         return true;
     }
     if (ceBotHand.length === 0) {
         ceIsGameOver = true;
-        alert("Ganó la IA.");
+        alert("La IA ha ganado.");
         return true;
     }
     return false;
 }
 
 // ==========================================
-// 5. JUEGO 4: GO FISH (VE A PESCAR)
+// 5. JUEGO 4: GO FISH (PREMIO: LINK A WEB DEL PROYECTO)
 // ==========================================
-var gfNumPlayers = 2; // Por defecto 2 jugadores
+var gfNumPlayers = 2;
 var gfDeck = [];
-var gfPlayers = []; // { id: 0 (Tú), name: 'Tú'/'Bill'/etc, hand: [], books: 0, isBot: boolean }
+var gfPlayers = [];
 var gfCurrentTurnIndex = 0;
 var gfSelectedTargetIndex = 1;
-var gfPendingFishRank = null; // Rango pedido esperando que el usuario pesque
+var gfPendingFishRank = null;
 var gfIsGameOver = false;
 
 function setGFNumPlayers(num, btn) {
@@ -608,7 +631,6 @@ function initGoFishGame() {
         gfPlayers.push({ id: p, name: botNames[p - 1], hand: [], books: 0, isBot: true });
     }
 
-    // Regla de reparto: 2 jugadores = 7 cartas c/u; 3 o 4 jugadores = 6 o 5 cartas c/u
     var initialCards = (gfNumPlayers === 2) ? 7 : (gfNumPlayers === 3 ? 6 : 5);
 
     for (var c = 0; c < initialCards; c++) {
@@ -617,16 +639,13 @@ function initGoFishGame() {
         }
     }
 
-    // Seleccionar primer jugador al azar
     gfCurrentTurnIndex = Math.floor(Math.random() * gfPlayers.length);
 
-    // Ocultar configuración y mostrar mesa
     var setupPanel = document.getElementById('gf-setup-panel');
     var playArea = document.getElementById('gf-play-area');
     if (setupPanel) setupPanel.classList.add('hidden');
     if (playArea) playArea.classList.remove('hidden');
 
-    // Verificar libros iniciales
     for (var p = 0; p < gfPlayers.length; p++) {
         checkAndRemoveBooks(p);
     }
@@ -654,7 +673,6 @@ function checkAndRemoveBooks(playerIdx) {
 
     for (var val in counts) {
         if (counts[val] === 4) {
-            // Remover las 4 cartas del libro
             player.hand = player.hand.filter(function(card) { return card.value !== val; });
             player.books++;
             setGFStatus(player.name + " ¡ha formado un libro de " + val + "s!");
@@ -663,7 +681,6 @@ function checkAndRemoveBooks(playerIdx) {
 }
 
 function renderGoFishBoard() {
-    // Render Oponentes
     var opContainer = document.getElementById('gf-opponents-container');
     if (opContainer) {
         opContainer.innerHTML = '';
@@ -676,21 +693,17 @@ function renderGoFishBoard() {
         }
     }
 
-    // Render Mazo central (Piscina)
     var poolCards = document.getElementById('gf-pool-graphics');
     if (poolCards) {
         poolCards.innerText = " Cartas: " + gfDeck.length;
     }
 
-    // Libros del usuario
     var uBooks = document.getElementById('gf-user-books');
     if (uBooks) uBooks.innerText = gfPlayers[0].books;
 
-    // Mano del Usuario
     var uHandEl = document.getElementById('gf-user-hand');
     if (uHandEl) {
         uHandEl.innerHTML = '';
-        // Ordenar mano por rango para mejor visualización
         gfPlayers[0].hand.sort(function(a, b) { return values.indexOf(a.value) - values.indexOf(b.value); });
 
         gfPlayers[0].hand.forEach(function(card) {
@@ -702,7 +715,6 @@ function renderGoFishBoard() {
         });
     }
 
-    // Panel de Solicitud de cartas (Turno del usuario)
     var askPanel = document.getElementById('gf-ask-panel');
     if (askPanel) {
         if (gfCurrentTurnIndex === 0 && !gfPendingFishRank && !gfIsGameOver) {
@@ -735,17 +747,15 @@ function renderGFAskPanel() {
                 })(i);
             }
         } else {
-            gfSelectedTargetIndex = 1; // Solo hay 1 rival (Bill)
+            gfSelectedTargetIndex = 1;
         }
     }
 
     if (rankDiv) {
         rankDiv.innerHTML = '';
-        // Regla: Solo se puede pedir rangos que el jugador ya tenga en la mano
         var userRanks = Array.from(new Set(gfPlayers[0].hand.map(function(c) { return c.value; })));
 
         if (userRanks.length === 0) {
-            // Si el usuario no tiene cartas, debe robar
             refillHandIfEmpty(0);
             renderGoFishBoard();
             return;
@@ -770,7 +780,6 @@ function userAskRank(rank) {
     var matchingCards = targetPlayer.hand.filter(function(c) { return c.value === rank; });
 
     if (matchingCards.length > 0) {
-        // Entrega las cartas y obtiene otro turno
         targetPlayer.hand = targetPlayer.hand.filter(function(c) { return c.value !== rank; });
         gfPlayers[0].hand = gfPlayers[0].hand.concat(matchingCards);
 
@@ -781,7 +790,6 @@ function userAskRank(rank) {
         checkGameOver();
         renderGoFishBoard();
     } else {
-        // "VE A PESCAR" (Go Fish)
         setGFStatus(targetPlayer.name + ' dice: "¡VE A PESCAR!". Haz clic en el montón del centro para pescar.');
         gfPendingFishRank = rank;
         renderGoFishBoard();
@@ -836,7 +844,6 @@ function processGFBotTurn() {
         return;
     }
 
-    // Elegir objetivo y rango al azar de su mano
     var targetIdx = 0;
     do {
         targetIdx = Math.floor(Math.random() * gfPlayers.length);
@@ -898,7 +905,6 @@ function refillHandIfEmpty(playerIdx) {
 function checkGameOver() {
     var totalBooks = gfPlayers.reduce(function(sum, p) { return sum + p.books; }, 0);
 
-    // Fin de juego: 13 libros completados o mazo vacío sin cartas
     if (totalBooks === 13 || (gfDeck.length === 0 && gfPlayers.every(function(p) { return p.hand.length === 0; }))) {
         gfIsGameOver = true;
 
@@ -907,8 +913,15 @@ function checkGameOver() {
             if (p.books > winner.books) winner = p;
         });
 
-        document.getElementById('modal-title').innerText = "¡FIN DEL JUEGO GO FISH!";
-        document.getElementById('modal-body').innerHTML = '<p><strong>Ganador: ' + winner.name + ' con ' + winner.books + ' libros.</strong></p>';
+        // PREMIO GO FISH: LINK A LA PÁGINA WEB DE INVESTIGACIÓN
+        document.getElementById('modal-title').innerText = "¡PREMIO: SITIO WEB DE INVESTIGACIÓN!";
+        document.getElementById('modal-body').innerHTML = `
+            <p><strong>¡Ganador: ${winner.name} con ${winner.books} libros!</strong></p>
+            <p style="margin: 15px 0;">Has desbloqueado el portal completo con todos los resultados y detalles del proyecto de investigación:</p>
+            <a href="https://macintosh826.github.io/press-start-investigacion/" target="_blank" class="btn-primary" style="display: inline-block; text-decoration: none; padding: 12px 20px; box-sizing: border-box;">
+                VISITAR PÁGINA DEL PROYECTO 🚀
+            </a>
+        `;
         document.getElementById('info-modal').classList.remove('hidden');
     }
 }
