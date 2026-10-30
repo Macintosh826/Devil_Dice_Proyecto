@@ -328,7 +328,7 @@ function checkCrescentWin() {
         document.getElementById('modal-body').innerHTML = `
             <p>¡Has completado el Solitario Crescent! Como recompensa, desbloqueaste la entrevista exclusiva del proyecto:</p>
             <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; margin-top:15px;">
-                <iframe src="https://www.youtube.com/embed/AQUÍ_VA_EL_ID_DE_TU_VIDEO" frameborder="0" allowfullscreen 
+                <iframe src="https://www.youtube.com/embed/qT26sHJDWOY" frameborder="0" allowfullscreen 
                     style="position:absolute; top:0; left:0; width:100%; height:100%;"></iframe>
             </div>
         `;
