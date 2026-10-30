@@ -597,3 +597,13 @@ h2 {
     color: #fff;
     border-color: #fff;
 }
+
+/* Estilo para mostrar infografías en los modales */
+.modal-infographic {
+    width: 100%;
+    max-height: 450px;
+    object-fit: contain;
+    border-radius: 6px;
+    border: 2px solid var(--accent-gold);
+    margin-top: 10px;
+}
