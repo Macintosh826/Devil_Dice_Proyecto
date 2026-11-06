@@ -38,6 +38,17 @@ function showSelector() {
 }
 
 // ==========================================
+// FUNCIÓN DE SONIDO GLOBAL (Independiente)
+// ==========================================
+function playSound() {
+    var audio = new Audio('click.wav'); 
+    audio.volume = 0.3; 
+    audio.play().catch(function(error) {
+        console.log("Audio reproducido automáticamente o bloqueado por el navegador.");
+    });
+}
+
+// ==========================================
 // 2. JUEGO 1: DEVIL DICE (DADOS) - SE MANTIENE
 // ==========================================
 var diceValues = [1, 1, 1, 1, 1];
@@ -76,26 +87,14 @@ function rollDice() {
     turnsLeft--;
     hasRolled = true;
     updateDiceUI();
+    playSound();
 }
 
 function toggleHold(index) {
     if (!hasRolled) return;
     heldDice[index] = !heldDice[index];
     updateDiceUI();
-    playSound(); // <--- Aquí llamas al sonido cuando el usuario fija/desfija un dado
-}
-
-// ==========================================
-// FUNCIÓN DE SONIDO GLOBAL (Independiente)
-// ==========================================
-function playSound() {
-    var audio = new Audio('click.wav'); // Nota: asegurate de usar 'click.wav' ya que subiste ese archivo al repositorio
-    audio.volume = 0.3; 
-    audio.play().catch(function(error) {
-        console.log("Audio reproducido automáticamente o bloqueado por el navegador.");
-    });
-}
-    
+    playSound();
 }
 
 function updateDiceUI() {
@@ -285,17 +284,7 @@ function renderCrescentBoard() {
 function selectOuterCard(pileIndex) {
     if (outerPiles[pileIndex].length === 0) return;
     selectedCard = { pileIndex: pileIndex, card: outerPiles[pileIndex][outerPiles[pileIndex].length - 1] };
-    // Se eliminó la línea de alerta (alert) para que ya no aparezca el globo de texto
-    // ==========================================
-// FUNCIÓN DE SONIDO GLOBAL (Independiente)
-// ==========================================
-function playSound() {
-    var audio = new Audio('click.wav'); // Nota: asegurate de usar 'click.wav' ya que subiste ese archivo al repositorio
-    audio.volume = 0.3; 
-    audio.play().catch(function(error) {
-        console.log("Audio reproducido automáticamente o bloqueado por el navegador.");
-    });
-}
+    playSound();
 }
 
 function placeOnFoundation(type, foundationIndex) {
@@ -308,8 +297,10 @@ function placeOnFoundation(type, foundationIndex) {
     if (cardToMove.suit === topCard.suit) {
         if (type === 'top' && cardToMove.rank === topCard.rank - 1) {
             targetStack.push(outerPiles[selectedCard.pileIndex].pop());
+            playSound();
         } else if (type === 'bot' && cardToMove.rank === topCard.rank + 1) {
             targetStack.push(outerPiles[selectedCard.pileIndex].pop());
+            playSound();
         } else {
             selectedCard = null;
             return;
@@ -339,6 +330,7 @@ function shuffleCrescent() {
         }
     });
 
+    playSound();
     renderCrescentBoard();
 }
 
@@ -483,6 +475,7 @@ function toggleSelectUserCard(index) {
             ceSelectedIndices.push(index);
         }
     }
+    playSound();
     renderCrazyEightsBoard();
 }
 
@@ -498,18 +491,9 @@ function playSelectedCards() {
     if (!isValidMove) {
         setCEStatus("Jugada inválida.");
         return;
-        // ==========================================
-// FUNCIÓN DE SONIDO GLOBAL (Independiente)
-// ==========================================
-function playSound() {
-    var audio = new Audio('click.wav'); // Nota: asegurate de usar 'click.wav' ya que subiste ese archivo al repositorio
-    audio.volume = 0.3; 
-    audio.play().catch(function(error) {
-        console.log("Audio reproducido automáticamente o bloqueado por el navegador.");
-    });
-}
     }
 
+    playSound();
     ceSelectedIndices.sort(function(a, b) { return b - a; }).forEach(function(i) {
         ceUserHand.splice(i, 1);
     });
@@ -541,6 +525,7 @@ function selectSuit(suit) {
     ceCurrentSuit = suit;
     var suitModal = document.getElementById('suit-modal');
     if (suitModal) suitModal.classList.add('hidden');
+    playSound();
 
     if (checkCrazyEightsWin()) return;
 
@@ -557,6 +542,7 @@ function drawCardUser() {
     var drawnCard = ceDeck.pop();
     ceUserHand.push(drawnCard);
     ceDrawnThisTurn++;
+    playSound();
     setCEStatus("Robaste una carta.");
     renderCrazyEightsBoard();
 }
@@ -566,6 +552,7 @@ function passTurn() {
     ceSelectedIndices = [];
     ceDrawnThisTurn = 0;
     ceIsUserTurn = false;
+    playSound();
     setCEStatus("Pasaste turno.");
     renderCrazyEightsBoard();
     setTimeout(botTurn, 1000);
@@ -638,6 +625,7 @@ function setGFNumPlayers(num, btn) {
     var btns = document.querySelectorAll('.btn-gf-num');
     btns.forEach(function(b) { b.classList.remove('active'); });
     if (btn) btn.classList.add('active');
+    playSound();
 }
 
 function createGFDeck() {
@@ -656,6 +644,7 @@ function initGoFishGame() {
     gfPlayers = [];
     gfIsGameOver = false;
     gfPendingFishRank = null;
+    playSound();
 
     var botNames = ['Bill', 'Pedro', 'Ana'];
     gfPlayers.push({ id: 0, name: 'Tú', hand: [], books: 0, isBot: false });
@@ -774,6 +763,7 @@ function renderGFAskPanel() {
                     btn.innerText = gfPlayers[idx].name;
                     btn.onclick = function() {
                         gfSelectedTargetIndex = idx;
+                        playSound();
                         renderGFAskPanel();
                     };
                     targetDiv.appendChild(btn);
@@ -806,6 +796,7 @@ function renderGFAskPanel() {
 
 function userAskRank(rank) {
     if (gfCurrentTurnIndex !== 0 || gfIsGameOver) return;
+    playSound();
 
     var targetPlayer = gfPlayers[gfSelectedTargetIndex];
     setGFStatus("Le pides " + rank + "s a " + targetPlayer.name + "...");
@@ -831,6 +822,7 @@ function userAskRank(rank) {
 
 function fishFromOcean() {
     if (gfCurrentTurnIndex !== 0 || !gfPendingFishRank || gfIsGameOver) return;
+    playSound();
 
     if (gfDeck.length > 0) {
         var drawnCard = gfDeck.pop();
@@ -946,7 +938,6 @@ function checkGameOver() {
             if (p.books > winner.books) winner = p;
         });
 
-        // PREMIO GO FISH: LINK A LA PÁGINA WEB DE INVESTIGACIÓN
         document.getElementById('modal-title').innerText = "¡PREMIO: SITIO WEB DE INVESTIGACIÓN!";
         document.getElementById('modal-body').innerHTML = `
             <p><strong>¡Ganador: ${winner.name} con ${winner.books} libros!</strong></p>
@@ -958,4 +949,3 @@ function checkGameOver() {
         document.getElementById('info-modal').classList.remove('hidden');
     }
 }
-
