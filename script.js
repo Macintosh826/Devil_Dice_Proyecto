@@ -82,6 +82,20 @@ function toggleHold(index) {
     if (!hasRolled) return;
     heldDice[index] = !heldDice[index];
     updateDiceUI();
+    playSound(); // <--- Aquí llamas al sonido cuando el usuario fija/desfija un dado
+}
+
+// ==========================================
+// FUNCIÓN DE SONIDO GLOBAL (Independiente)
+// ==========================================
+function playSound() {
+    var audio = new Audio('click.wav'); // Nota: asegurate de usar 'click.wav' ya que subiste ese archivo al repositorio
+    audio.volume = 0.3; 
+    audio.play().catch(function(error) {
+        console.log("Audio reproducido automáticamente o bloqueado por el navegador.");
+    });
+}
+    
 }
 
 function updateDiceUI() {
@@ -272,6 +286,16 @@ function selectOuterCard(pileIndex) {
     if (outerPiles[pileIndex].length === 0) return;
     selectedCard = { pileIndex: pileIndex, card: outerPiles[pileIndex][outerPiles[pileIndex].length - 1] };
     // Se eliminó la línea de alerta (alert) para que ya no aparezca el globo de texto
+    // ==========================================
+// FUNCIÓN DE SONIDO GLOBAL (Independiente)
+// ==========================================
+function playSound() {
+    var audio = new Audio('click.wav'); // Nota: asegurate de usar 'click.wav' ya que subiste ese archivo al repositorio
+    audio.volume = 0.3; 
+    audio.play().catch(function(error) {
+        console.log("Audio reproducido automáticamente o bloqueado por el navegador.");
+    });
+}
 }
 
 function placeOnFoundation(type, foundationIndex) {
@@ -474,6 +498,16 @@ function playSelectedCards() {
     if (!isValidMove) {
         setCEStatus("Jugada inválida.");
         return;
+        // ==========================================
+// FUNCIÓN DE SONIDO GLOBAL (Independiente)
+// ==========================================
+function playSound() {
+    var audio = new Audio('click.wav'); // Nota: asegurate de usar 'click.wav' ya que subiste ese archivo al repositorio
+    audio.volume = 0.3; 
+    audio.play().catch(function(error) {
+        console.log("Audio reproducido automáticamente o bloqueado por el navegador.");
+    });
+}
     }
 
     ceSelectedIndices.sort(function(a, b) { return b - a; }).forEach(function(i) {
