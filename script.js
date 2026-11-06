@@ -271,7 +271,7 @@ function renderCrescentBoard() {
 function selectOuterCard(pileIndex) {
     if (outerPiles[pileIndex].length === 0) return;
     selectedCard = { pileIndex: pileIndex, card: outerPiles[pileIndex][outerPiles[pileIndex].length - 1] };
-    alert("Carta seleccionada: " + selectedCard.card.value + " de " + selectedCard.card.suit);
+    // Se eliminó la línea de alerta (alert) para que ya no aparezca el globo de texto
 }
 
 function placeOnFoundation(type, foundationIndex) {
@@ -287,11 +287,11 @@ function placeOnFoundation(type, foundationIndex) {
         } else if (type === 'bot' && cardToMove.rank === topCard.rank + 1) {
             targetStack.push(outerPiles[selectedCard.pileIndex].pop());
         } else {
-            alert("Movimiento inválido.");
+            selectedCard = null;
             return;
         }
     } else {
-        alert("La carta debe ser del mismo palo.");
+        selectedCard = null;
         return;
     }
 
@@ -302,7 +302,6 @@ function placeOnFoundation(type, foundationIndex) {
 
 function shuffleCrescent() {
     if (shufflesLeft <= 0) {
-        alert("Sin barajadas restantes.");
         return;
     }
     shufflesLeft--;
